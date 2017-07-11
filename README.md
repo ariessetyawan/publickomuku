@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <p align="center"><img src="https://laravel.com/assets/img/components/logo-laravel.svg"></p>
 
 <p align="center">
@@ -38,3 +39,7 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+=======
+# publickomuku
+Komuku (E2C Forum) adalah adalah share, komunitas dan jual beli. Komuku adalah tempat tinggal bagi siapa saja untuk menemukan segala hal yang meraka butuhkan, seperti informasi, pengetahuan, bergabung dengan komunitas, membuat dan melihat acara, hingga jual beli. Komuku terbagi dua jenis yaitu, Forum dan Yuk Jual Beli (YJB). Forum adalah wadah untuk berbagi dan berdiskusi tentang segala hal. Yuk Jual Beli (YJB) adalah wadah untuk bertransaksi jual beli produk apapun.
+>>>>>>> c1120dbfdd87424fd403728adc5bf559d925c5dd
