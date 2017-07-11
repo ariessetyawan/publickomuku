@@ -1,0 +1,1 @@
+{"queries":[["DROP TABLE IF EXISTS `kmk_kl_fm_fonts`","DROP TABLE IF EXISTS `kmk_kl_fm_webfonts`","DELETE FROM `kmk_option` WHERE `option_id` = 0x6b6c5f666d5f6d6f6465"]],"foldersToDelete":["data_fonts"]}

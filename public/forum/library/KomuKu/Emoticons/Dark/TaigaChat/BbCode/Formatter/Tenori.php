@@ -1,0 +1,6 @@
+<?php
+
+class KomuKu_Emoticons_Dark_TaigaChat_BbCode_Formatter_Tenori extends XFCP_KomuKu_Emoticons_Dark_TaigaChat_BbCode_Formatter_Tenori
+{
+	use KomuKu_Emoticons_Traits_BbCodeBase;
+}

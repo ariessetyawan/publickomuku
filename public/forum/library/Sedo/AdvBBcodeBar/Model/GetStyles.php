@@ -1,0 +1,36 @@
+<?php
+
+    class Sedo_AdvBBcodeBar_Model_GetStyles extends XenForo_Model
+    {
+        public function getStylesOptions($selectedStyleIds)
+        {
+
+            $Styles = array();
+            foreach ($this->getDbStyles() AS $style)
+            {
+		$Styles[] = array(
+		'label' => filter_var($style['title', FILTER_SANITIZE_STRING),
+		'value' => $style['style_id'],
+		'selected' => in_array($style['style_id'], $selectedStyleIds)
+                );
+            }
+
+        return $Styles;
+
+        }
+
+        public function getDbStyles()
+        {
+
+            return $this->_getDb()->fetchAll('
+		SELECT style_id, title
+		FROM kmk_style
+		WHERE style_id
+		ORDER BY style_id
+            ');
+
+        }
+
+    }
+    
+    

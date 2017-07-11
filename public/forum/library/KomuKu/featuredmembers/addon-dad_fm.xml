@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="dad_fm" title="[HA] Featured Members (+ Verified Badge)" version_string="1.5.0" version_id="901020090" url="https://xenforo.com/community/resources/authors/KomuKu.74993/" install_callback_class="KomuKu_featuredmembers_Install" install_callback_method="install" uninstall_callback_class="KomuKu_featuredmembers_Install" uninstall_callback_method="uninstall">
+  <admin_navigation/>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates>
+    <template title="dad_fm_user_edit"><![CDATA[<xen:checkboxunit label="">
+	<xen:option name="dad_fm_is_featured" selected="{$user.dad_fm_is_featured}" label="{xen:phrase dad_fm_mif}" hint="{xen:phrase dad_fm_mife}" />
+</xen:checkboxunit>
+
+<xen:checkboxunit label="">
+	<xen:option name="dad_fm_is_verified" selected="{$user.dad_fm_is_verified}" label="{xen:phrase dad_fm_miv}" hint="{xen:phrase dad_fm_mive}" />
+</xen:checkboxunit>]]></template>
+    <template title="dad_fm_widget_options"><![CDATA[<xen:spinboxunit label="{xen:phrase wf_limit}:" name="{$namePrefix}limit" value="{xen:if '!empty({$options.limit})', $options.limit, 0}">
+	<xen:explain>{xen:phrase wf_limit_explain, "items={xen:phrase wf_users_lowercase}"}</xen:explain>
+</xen:spinboxunit>
+
+<xen:radiounit label="{xen:phrase wf_display_mode}:" name="{$namePrefix}displayMode" value="{xen:if '{$options.displayMode}', $options.displayMode, 'avatarOnlyBigger'}">
+	<xen:option value="list">{xen:phrase wf_widget_users_display_mode_list}</xen:option>
+	<xen:option value="avatarOnly">{xen:phrase wf_widget_users_display_mode_avatar_only}</xen:option>
+	<xen:option value="avatarOnlyBigger">{xen:phrase wf_widget_users_display_mode_avatar_only_bigger}</xen:option>
+</xen:radiounit>]]></template>
+  </admin_templates>
+  <admin_template_modifications>
+    <modification template="user_edit" modification_key="addFeaturedMemberCheckbox" description="addFeaturedMemberCheckbox" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[<xen:checkboxunit label="">
+					<xen:option name="is_staff" selected="{$user.is_staff}" label="{xen:phrase display_user_as_staff}" hint="{xen:phrase if_selected_this_user_will_be_listed_publicly_as_staff_member}" />
+				</xen:checkboxunit>]]></find>
+      <replace><![CDATA[$0
+<xen:include template="dad_fm_user_edit" />]]></replace>
+    </modification>
+    <modification template="helper_user_search_criteria" modification_key="addFeaturedVerifiedToSearchCriteria" description="addFeaturedVerifiedToSearchCriteria" execution_order="10" enabled="0" action="str_replace">
+      <find><![CDATA[<xen:checkboxunit label="{xen:phrase staff_state}:" name="criteria[is_staff]">
+		<xen:option value="0" selected="{$criteria.is_staff.0}">{xen:phrase not_staff_member}</xen:option>
+		<xen:option value="1" selected="{$criteria.is_staff.1}">{xen:phrase staff_member}</xen:option>
+	</xen:checkboxunit>]]></find>
+      <replace><![CDATA[$0
+
+<xen:checkboxunit label="" name="criteria[dad_fm_is_verified]">
+		<xen:option value="0" selected="{$criteria.dad_fm_is_verified.0}">{xen:phrase dad_fm_minv}</xen:option>
+		<xen:option value="1" selected="{$criteria.dad_fm_is_verified.1}">{xen:phrase dad_fm_miv}</xen:option>
+</xen:checkboxunit>
+
+
+<xen:checkboxunit label="" name="criteria[dad_fm_is_featured]">
+		<xen:option value="0" selected="{$criteria.dad_fm_is_featured.0}">{xen:phrase dad_fm_minf}</xen:option>
+		<xen:option value="1" selected="{$criteria.dad_fm_is_featured.1}">{xen:phrase dad_fm_mif}</xen:option>
+</xen:checkboxunit>]]></replace>
+    </modification>
+  </admin_template_modifications>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="criteria_user" execute_order="10" callback_class="KomuKu_featuredmembers_Listener" callback_method="criteriaUser" active="1" hint="" description="Extends Criteria"/>
+    <listener event_id="init_dependencies" execute_order="9999" callback_class="KomuKu_featuredmembers_Listener" callback_method="initDependencies" active="1" hint="" description="Extends rich username helper function"/>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="KomuKu_featuredmembers_Listener" callback_method="extendXenForoControllerAdminUser" active="1" hint="XenForo_ControllerAdmin_User" description="Extends XenForo_ControllerAdmin_User"/>
+    <listener event_id="load_class_datawriter" execute_order="10" callback_class="KomuKu_featuredmembers_Listener" callback_method="extendXenForoDataWriterUser" active="1" hint="XenForo_DataWriter_User" description="Extends XenForo_DataWriter_User"/>
+    <listener event_id="load_class_model" execute_order="10" callback_class="KomuKu_featuredmembers_Listener" callback_method="extendXenForoControllerModelUser" active="1" hint="XenForo_Model_User" description="XenForo_Model_User"/>
+    <listener event_id="load_class_view" execute_order="10" callback_class="KomuKu_featuredmembers_Listeners_Proxy" callback_method="extendWidgetPageView" active="1" hint="WidgetFramework_ViewPublic_WidgetPage_Index" description="extendWidgetPageView"/>
+    <listener event_id="template_hook" execute_order="10" callback_class="KomuKu_featuredmembers_Listener" callback_method="templateHook" active="1" hint="" description="Extends Criteria"/>
+    <listener event_id="widget_framework_ready" execute_order="10" callback_class="KomuKu_featuredmembers_Listeners_WidgetFramework" callback_method="widget_framework_ready" active="1" hint="" description="Featured Members: Widget Framework Integration"/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups>
+    <group group_id="dad_fm" display_order="1" debug_only="0"/>
+    <option option_id="dad_fm_badge_type" edit_format="radio" data_type="string" can_backup="1">
+      <default_value>image</default_value>
+      <edit_format_params>image=Image
+icon=Icon</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="dad_fm" display_order="1"/>
+    </option>
+    <option option_id="dad_fm_featuredbadge" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value>styles/default/KomuKu/featuredmembers/verifiedbadge2.png</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="dad_fm" display_order="11"/>
+    </option>
+    <option option_id="dad_fm_featuredbadge_icon" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value>fa-certificate</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="dad_fm" display_order="21"/>
+    </option>
+    <option option_id="dad_fm_featuredbadge_opposite" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="dad_fm" display_order="34"/>
+    </option>
+    <option option_id="dad_fm_featuredbadge_postbit_hide" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="dad_fm" display_order="36"/>
+    </option>
+    <option option_id="dad_fm_featuredbadge_threadlist" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="dad_fm" display_order="31"/>
+    </option>
+    <option option_id="dad_fm_verifiedbadge" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value>styles/default/KomuKu/featuredmembers/verifiedbadge1.png</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="dad_fm" display_order="12"/>
+    </option>
+    <option option_id="dad_fm_verifiedbadge_icon" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value>fa-check-circle-o</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="dad_fm" display_order="22"/>
+    </option>
+    <option option_id="dad_fm_verifiedbadge_opposite" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="dad_fm" display_order="33"/>
+    </option>
+    <option option_id="dad_fm_verifiedbadge_postbit_hide" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="dad_fm" display_order="35"/>
+    </option>
+    <option option_id="dad_fm_verifiedbadge_threadlist" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="dad_fm" display_order="32"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups/>
+    <permissions/>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="dad_fm_fm" version_id="0" version_string="1.0.0"><![CDATA[Featured Member]]></phrase>
+    <phrase title="dad_fm_ifm" version_id="901020090" version_string="1.3.0"><![CDATA[Featured Member]]></phrase>
+    <phrase title="dad_fm_ivm" version_id="901020090" version_string="1.3.0"><![CDATA[Verified Member]]></phrase>
+    <phrase title="dad_fm_mif" version_id="0" version_string="1.0.0"><![CDATA[Member is Featured]]></phrase>
+    <phrase title="dad_fm_mife" version_id="0" version_string="1.0.0"><![CDATA[If selected, this user will be listed publicly as a featured member.]]></phrase>
+    <phrase title="dad_fm_minf" version_id="901020090" version_string="1.1.2"><![CDATA[Member is Not Featured]]></phrase>
+    <phrase title="dad_fm_minv" version_id="901020090" version_string="1.1.2"><![CDATA[Member is Not Verified]]></phrase>
+    <phrase title="dad_fm_miv" version_id="0" version_string="1.0.0"><![CDATA[Member is Verified]]></phrase>
+    <phrase title="dad_fm_mive" version_id="0" version_string="1.0.0"><![CDATA[If selected, this user will be listed publicly as a verified member.]]></phrase>
+    <phrase title="dad_fm_taif" version_id="901020090" version_string="1.2.1"><![CDATA[{username} is a Featured Member]]></phrase>
+    <phrase title="dad_fm_taiv" version_id="901020090" version_string="1.3.2"><![CDATA[{username} is a Verified Member]]></phrase>
+    <phrase title="dad_fm_vm" version_id="0" version_string="1.0.0"><![CDATA[Verified Members]]></phrase>
+    <phrase title="option_dad_fm_badge_type" version_id="901020090" version_string="1.4.0"><![CDATA[Badge Type]]></phrase>
+    <phrase title="option_dad_fm_badge_type_explain" version_id="901020090" version_string="1.4.0"><![CDATA[Which type of badge you want to use?<br>
+Based on what you select here, then choose image or icon accordingly below.]]></phrase>
+    <phrase title="option_dad_fm_featuredbadge" version_id="901020090" version_string="1.2.1"><![CDATA[Featured Badge]]></phrase>
+    <phrase title="option_dad_fm_featuredbadge_explain" version_id="901020090" version_string="1.3.0"><![CDATA[If you don't like default badge used as featured badge, you can enter any link to any image. Use direct link to an image, either in your host, or in other site.<br>
+There are a few ready to use badges:<br>
+styles/default/KomuKu/featuredmembers/verifiedbadge1.png<br>
+styles/default/KomuKu/featuredmembers/verifiedbadge2.png<br>
+Note: in order not to display badge for featured member, make this field empty.]]></phrase>
+    <phrase title="option_dad_fm_featuredbadge_icon" version_id="901020090" version_string="1.4.0"><![CDATA[Featured Badge - Icon]]></phrase>
+    <phrase title="option_dad_fm_featuredbadge_icon_explain" version_id="901020090" version_string="1.4.0"><![CDATA[Select the badge icon you want for Featured members.]]></phrase>
+    <phrase title="option_dad_fm_featuredbadge_opposite" version_id="901020090" version_string="1.3.0"><![CDATA[Featured Badge on Opposite Side]]></phrase>
+    <phrase title="option_dad_fm_featuredbadge_opposite_explain" version_id="901020090" version_string="1.3.0"><![CDATA[Do you want to display the Featured Badge in opposite side of username?]]></phrase>
+    <phrase title="option_dad_fm_featuredbadge_postbit_hide" version_id="901020090" version_string="1.4.0"><![CDATA[Hide Featured Badge From Postbit]]></phrase>
+    <phrase title="option_dad_fm_featuredbadge_postbit_hide_explain" version_id="901020090" version_string="1.4.0"><![CDATA[Do you want to Hide Featured Badge From Postbit?]]></phrase>
+    <phrase title="option_dad_fm_featuredbadge_threadlist" version_id="901020090" version_string="1.2.1"><![CDATA[Show featured badge in thread list]]></phrase>
+    <phrase title="option_dad_fm_featuredbadge_threadlist_explain" version_id="901020090" version_string="1.2.1"><![CDATA[Do you want to display featured badge next to username in thread list in forums?]]></phrase>
+    <phrase title="option_dad_fm_verifiedbadge" version_id="0" version_string="1.1.0"><![CDATA[Verified Badge]]></phrase>
+    <phrase title="option_dad_fm_verifiedbadge_explain" version_id="901020090" version_string="1.3.0"><![CDATA[If you don't like default badge used as verified badge, you can enter any link to any image. Use direct link to an image, either in your host, or in other site.<br>
+There are a few ready to use badges:<br>
+styles/default/KomuKu/featuredmembers/verifiedbadge1.png<br>
+styles/default/KomuKu/featuredmembers/verifiedbadge2.png<br>
+Note: in order not to display badge for verified member, make this field empty.]]></phrase>
+    <phrase title="option_dad_fm_verifiedbadge_icon" version_id="901020090" version_string="1.4.0"><![CDATA[Verified Badge - Icon]]></phrase>
+    <phrase title="option_dad_fm_verifiedbadge_icon_explain" version_id="901020090" version_string="1.4.0"><![CDATA[Select the badge icon you want for Verified members.]]></phrase>
+    <phrase title="option_dad_fm_verifiedbadge_opposite" version_id="901020090" version_string="1.3.0"><![CDATA[Verified Badge on Opposite Side]]></phrase>
+    <phrase title="option_dad_fm_verifiedbadge_opposite_explain" version_id="901020090" version_string="1.3.0"><![CDATA[Do you want to display the Verified Badge in opposite side of username?]]></phrase>
+    <phrase title="option_dad_fm_verifiedbadge_postbit_hide" version_id="901020090" version_string="1.4.0"><![CDATA[Hide Verified Badge From Postbit]]></phrase>
+    <phrase title="option_dad_fm_verifiedbadge_postbit_hide_explain" version_id="901020090" version_string="1.4.0"><![CDATA[D you want to Hide Verified Badge From Postbit?]]></phrase>
+    <phrase title="option_dad_fm_verifiedbadge_threadlist" version_id="901020090" version_string="1.2.1"><![CDATA[Show verified badge in thread list]]></phrase>
+    <phrase title="option_dad_fm_verifiedbadge_threadlist_explain" version_id="901020090" version_string="1.1.1"><![CDATA[Do you want to display verified badge next to username in thread list in forums?]]></phrase>
+    <phrase title="option_group_dad_fm" version_id="0" version_string="1.1.0"><![CDATA[[HA] Featured Members (+ Verified Badge)]]></phrase>
+    <phrase title="option_group_dad_fm_description" version_id="0" version_string="1.1.0"><![CDATA[Options here control [HA] Featured Members (+ Verified Badge) add-on.]]></phrase>
+    <phrase title="style_property_dad_fm_featuredbadge_description_master" version_id="901020090" version_string="1.2.1"><![CDATA[]]></phrase>
+    <phrase title="style_property_dad_fm_featuredbadge_icon_description_master" version_id="901020090" version_string="1.4.0"><![CDATA[]]></phrase>
+    <phrase title="style_property_dad_fm_featuredbadge_icon_master" version_id="901020090" version_string="1.4.0"><![CDATA[Featured Badge - Icon]]></phrase>
+    <phrase title="style_property_dad_fm_featuredbadge_master" version_id="901020090" version_string="1.2.1"><![CDATA[Featured Badge]]></phrase>
+    <phrase title="style_property_dad_fm_verifiedbadge_description_master" version_id="0" version_string="1.1.0"><![CDATA[]]></phrase>
+    <phrase title="style_property_dad_fm_verifiedbadge_icon_description_master" version_id="901020090" version_string="1.4.0"><![CDATA[]]></phrase>
+    <phrase title="style_property_dad_fm_verifiedbadge_icon_master" version_id="901020090" version_string="1.4.0"><![CDATA[Verified Badge - Icon]]></phrase>
+    <phrase title="style_property_dad_fm_verifiedbadge_master" version_id="0" version_string="1.1.0"><![CDATA[Verified Badge]]></phrase>
+    <phrase title="style_property_group_dad_fm_master" version_id="0" version_string="1.1.0"><![CDATA[[HA] Featured Members (+ Verified Badge)]]></phrase>
+    <phrase title="style_property_group_dad_fm_master_desc" version_id="0" version_string="1.1.0"><![CDATA[]]></phrase>
+  </phrases>
+  <route_prefixes/>
+  <style_properties>
+    <property property_name="dad_fm_verifiedbadge" property_type="css" definition="1" group_name="dad_fm" title="Verified Badge" description="" css_components="background,border,layout,extra" scalar_type="" scalar_parameters="" display_order="1" sub_group=""><![CDATA[{"extra":"vertical-align: middle !important;","height":"20px","width":"20px"}]]></property>
+    <property property_name="dad_fm_featuredbadge" property_type="css" definition="1" group_name="dad_fm" title="Featured Badge" description="" css_components="background,border,layout,extra" scalar_type="" scalar_parameters="" display_order="2" sub_group=""><![CDATA[{"extra":"vertical-align: middle !important;","height":"20px","width":"20px"}]]></property>
+    <property property_name="dad_fm_verifiedbadge_icon" property_type="css" definition="1" group_name="dad_fm" title="Verified Badge - Icon" description="" css_components="text,background,border,layout,extra" scalar_type="" scalar_parameters="" display_order="3" sub_group=""><![CDATA[[]]]></property>
+    <property property_name="dad_fm_featuredbadge_icon" property_type="css" definition="1" group_name="dad_fm" title="Featured Badge - Icon" description="" css_components="text,background,border,layout,extra" scalar_type="" scalar_parameters="" display_order="4" sub_group=""><![CDATA[[]]]></property>
+    <group group_name="dad_fm" display_order="1">
+      <title>[HA] Featured Members (+ Verified Badge)</title>
+      <description></description>
+    </group>
+  </style_properties>
+  <templates>
+    <template title="dad_fm_badge.css" version_id="901020090" version_string="1.4.0"><![CDATA[.username span .verifiedBadge
+{
+	content: "\f05d";
+	display: inline-block;
+	font: normal normal normal 14px/1 FontAwesome;
+	font-size: inherit;
+	text-rendering: auto;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.VerifiedBadge {
+{xen:property dad_fm_verifiedbadge}
+}
+
+.FeaturedBadge {
+{xen:property dad_fm_featuredbadge}
+}
+
+.VerifiedBadgeIcon {
+{xen:property dad_fm_verifiedbadge_icon}
+}
+
+.FeaturedBadgeIcon {
+{xen:property dad_fm_featuredbadge_icon}
+}
+
+<xen:if is="{$xenOptions.dad_fm_verifiedbadge_postbit_hide}">
+div.messageUserInfo i.VerifiedBadgeIcon {
+	display: none;
+}
+
+div.messageUserInfo img.VerifiedBadge {
+	display: none;
+}
+</xen:if>
+
+<xen:if is="{$xenOptions.dad_fm_featuredbadge_postbit_hide}">
+div.messageUserInfo i.FeaturedBadgeIcon {
+	display: none;
+}
+
+div.messageUserInfo img.FeaturedBadge {
+	display: none;
+}
+</xen:if>]]></template>
+    <template title="dad_fm_widget" version_id="0" version_string="1.0.0"><![CDATA[<xen:if is="{$widget.options.displayMode} == 'avatarOnly'">
+    <ul class="followedOnline">
+		<xen:foreach loop="$users" value="$user">
+			<xen:set var="$tooltip"><xen:include template="dad_fm_widget_tooltip" /></xen:set>
+			<li title="{$user.username}<xen:if hascontent="true">, <xen:contentcheck>{xen:helper striphtml, $tooltip}</xen:contentcheck></xen:if>" class="Tooltip user-{$user.user_id}">
+				<xen:avatar user="$user" size="s" img="true" class="_plainImage" />
+			</li>
+		</xen:foreach>
+	</ul>
+<xen:elseif is="{$widget.options.displayMode} == 'avatarOnlyBigger'" />
+    <ul class="avatarHeap">
+		<xen:foreach loop="$users" value="$user">
+			<xen:set var="$tooltip"><xen:include template="dad_fm_widget_tooltip" /></xen:set>
+			<li title="{$user.username}<xen:if hascontent="true">, <xen:contentcheck>{xen:helper striphtml, $tooltip}</xen:contentcheck></xen:if>" class="Tooltip user-{$user.user_id}">
+				<xen:avatar user="$user" size="s" />
+			</li>
+		</xen:foreach>
+	</ul>
+<xen:else />
+    <div class="avatarList">
+        <ul>
+        	<xen:foreach loop="$users" value="$user">
+        		<li class="user-{$user.user_id}">
+        			<xen:avatar user="$user" size="s" img="true" />
+        			<xen:username user="$user" rich="true" />
+					<xen:if hascontent="true"><div class="userTitle"><xen:contentcheck><xen:include template="dad_fm_widget_tooltip" /></xen:contentcheck></div></xen:if>
+        		</li>
+        	</xen:foreach>
+        </ul>
+    </div>
+</xen:if>]]></template>
+    <template title="dad_fm_widget_tooltip" version_id="0" version_string="1.0.0"><![CDATA[<xen:if is="{$widget.options.order} == 'message_count'">{xen:phrase messages}: {xen:number $user.message_count}<xen:elseif
+is="{$widget.options.order} == 'register_date'" />{xen:phrase joined}: {xen:datetime $user.register_date}<xen:else
+/>{xen:helper usertitle, $user}</xen:if>]]></template>
+  </templates>
+  <public_template_modifications>
+    <modification template="PAGE_CONTAINER" modification_key="addBadgesForCometChat" description="addBadgesForCometChat" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[</body>]]></find>
+      <replace><![CDATA[<script>
+var dadBadges = {
+		verifiedBadge : "<img class='VerifiedBadge Tooltip' src='{$xenOptions.dad_fm_verifiedbadge}' title='{xen:phrase dad_fm_ivm}' alt='{xen:phrase dad_fm_ivm}' />" + " " ,
+		featuredBadge : "<img class='FeaturedBadge Tooltip' src='{$xenOptions.dad_fm_featuredbadge}' title='{xen:phrase dad_fm_ifm}' alt='{xen:phrase dad_fm_ifm}' />" + " " ,
+	}
+</script>
+$0]]></replace>
+    </modification>
+    <modification template="PAGE_CONTAINER" modification_key="addFeaturedMemberCSS" description="addFeaturedMemberCSS" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[<!--XenForo_Require:CSS-->]]></find>
+      <replace><![CDATA[$0
+<xen:require css="dad_fm_badge.css" />]]></replace>
+    </modification>
+    <modification template="thread_list_item" modification_key="addVerifiedBadgeToThreadList" description="addVerifiedBadgeToThreadList" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[<xen:username user="$thread" title="{xen:phrase thread_starter}" />]]></find>
+      <replace><![CDATA[<xen:if is="{$xenOptions.dad_fm_badge_type} == 'image'">
+
+<xen:if is="{$xenOptions.dad_fm_verifiedbadge_threadlist}">
+<xen:if is="{$thread.dad_fm_is_verified}">
+<xen:if is="{$xenOptions.dad_fm_verifiedbadge}">
+<xen:if is="!{$xenOptions.dad_fm_verifiedbadge_opposite}">
+<img class="VerifiedBadge Tooltip" src="{$xenOptions.dad_fm_verifiedbadge}" data-offsetx="-8" title="{xen:phrase dad_fm_taiv, 'username={$thread.username}'}" alt="{xen:phrase dad_fm_taiv, 'username={$thread.username}'}" />
+</xen:if>
+</xen:if>
+</xen:if>
+</xen:if>
+
+
+<xen:if is="{$xenOptions.dad_fm_featuredbadge_threadlist}">
+<xen:if is="{$thread.dad_fm_is_featured}">
+<xen:if is="{$xenOptions.dad_fm_featuredbadge}">
+<xen:if is="!{$xenOptions.dad_fm_featuredbadge_opposite}">
+<img class="VerifiedBadge Tooltip" src="{$xenOptions.dad_fm_featuredbadge}" data-offsetx="-8" title="{xen:phrase dad_fm_taif, 'username={$thread.username}'}" alt="{xen:phrase dad_fm_taif, 'username={$thread.username}'}" />
+</xen:if>
+</xen:if>
+</xen:if>
+</xen:if>
+
+$0
+
+<xen:if is="{$xenOptions.dad_fm_featuredbadge_threadlist}">
+<xen:if is="{$thread.dad_fm_is_verified}">
+<xen:if is="{$xenOptions.dad_fm_verifiedbadge}">
+<xen:if is="{$xenOptions.dad_fm_verifiedbadge_opposite}">
+<img class="VerifiedBadge Tooltip" src="{$xenOptions.dad_fm_verifiedbadge}" data-offsetx="-8" title="{xen:phrase dad_fm_taiv, 'username={$thread.username}'}" alt="{xen:phrase dad_fm_taiv, 'username={$thread.username}'}" />
+</xen:if>
+</xen:if>
+</xen:if>
+</xen:if>
+
+<xen:if is="{$xenOptions.dad_fm_featuredbadge_threadlist}">
+<xen:if is="{$thread.dad_fm_is_featured}">
+<xen:if is="{$xenOptions.dad_fm_featuredbadge}">
+<xen:if is="{$xenOptions.dad_fm_featuredbadge_opposite}">
+<img class="VerifiedBadge Tooltip" src="{$xenOptions.dad_fm_featuredbadge}" data-offsetx="-8" title="{xen:phrase dad_fm_taif, 'username={$thread.username}'}" alt="{xen:phrase dad_fm_taif, 'username={$thread.username}'}" />
+</xen:if>
+</xen:if>
+</xen:if>
+</xen:if>
+
+</xen:if>
+
+
+
+<xen:if is="{$xenOptions.dad_fm_badge_type} == 'icon'">
+
+<xen:if is="{$xenOptions.dad_fm_verifiedbadge_threadlist}">
+<xen:if is="{$thread.dad_fm_is_verified}">
+<xen:if is="{$xenOptions.dad_fm_verifiedbadge_icon}">
+<xen:if is="!{$xenOptions.dad_fm_verifiedbadge_opposite}">
+<i class="VerifiedBadgeIcon Tooltip fa {$xenOptions.dad_fm_verifiedbadge_icon}" data-offsetx="-8" title="{xen:phrase dad_fm_taiv, 'username={$thread.username}'}"></i> 
+</xen:if>
+</xen:if>
+</xen:if>
+</xen:if>
+
+
+<xen:if is="{$xenOptions.dad_fm_featuredbadge_threadlist}">
+<xen:if is="{$thread.dad_fm_is_featured}">
+<xen:if is="{$xenOptions.dad_fm_featuredbadge_icon}">
+<xen:if is="!{$xenOptions.dad_fm_featuredbadge_opposite}">
+<i class="VerifiedBadgeIcon Tooltip fa {$xenOptions.dad_fm_featuredbadge_icon}" data-offsetx="-8" title="{xen:phrase dad_fm_taif, 'username={$thread.username}'}"></i> 
+</xen:if>
+</xen:if>
+</xen:if>
+</xen:if>
+
+$0
+
+<xen:if is="{$xenOptions.dad_fm_featuredbadge_threadlist}">
+<xen:if is="{$thread.dad_fm_is_verified}">
+<xen:if is="{$xenOptions.dad_fm_verifiedbadge_icon}">
+<xen:if is="{$xenOptions.dad_fm_verifiedbadge_opposite}">
+ <i class="VerifiedBadgeIcon Tooltip fa {$xenOptions.dad_fm_verifiedbadge_icon}" data-offsetx="-8" title="{xen:phrase dad_fm_taiv, 'username={$thread.username}'}"></i>
+</xen:if>
+</xen:if>
+</xen:if>
+</xen:if>
+
+<xen:if is="{$xenOptions.dad_fm_featuredbadge_threadlist}">
+<xen:if is="{$thread.dad_fm_is_featured}">
+<xen:if is="{$xenOptions.dad_fm_featuredbadge_icon}">
+<xen:if is="{$xenOptions.dad_fm_featuredbadge_opposite}">
+ <i class="VerifiedBadgeIcon Tooltip fa {$xenOptions.dad_fm_featuredbadge_icon}" data-offsetx="-8" title="{xen:phrase dad_fm_taif, 'username={$thread.username}'}"></i>
+</xen:if>
+</xen:if>
+</xen:if>
+</xen:if>
+
+</xen:if>]]></replace>
+    </modification>
+  </public_template_modifications>
+  <bb_code_media_sites/>
+  <bb_codes/>
+</addon>

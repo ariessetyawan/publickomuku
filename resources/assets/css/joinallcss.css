@@ -1,0 +1,21 @@
+var elixir = require('laravel-elixir');
+
+elixir(function(mix) {
+
+  // Compile my css files
+  mix.sass('main.scss');
+
+  // concat all vendor css
+  mix.styles([
+    'bootstrap/dist/css/bootstrap.css', 
+    'animate.css/animate.css'
+  ], 'public/css/vendor.css', 'bower_components');
+
+  // concat all style sheets
+  mix.styles([
+    "vendor.css",
+    "main.css",
+  ],'public/css/app.css' ,'public/css');
+
+  mix.version('public/css/app.css');
+});

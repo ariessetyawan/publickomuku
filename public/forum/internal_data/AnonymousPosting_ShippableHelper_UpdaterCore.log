@@ -1,0 +1,72 @@
+2017-05-27 09:12:22 AnonymousPosting_ShippableHelper_UpdaterCore::_updateSelf($apiUrl=https://xfrocks.com/api/index.php?updater): $configVersion=0, self::$_version=2016050601, $configUpdated=array (
+  0 => '$config',
+  1 => '$templateDw',
+  2 => '$templateModDw',
+  3 => '$config["version"]',
+)
+2017-05-27 13:11:40 AnonymousPosting_ShippableHelper_UpdaterCore::_saveConfig($apiUrl=https://xfrocks.com/api/index.php?updater)
+2017-05-27 13:11:43 AnonymousPosting_ShippableHelper_UpdaterCore::_fetchData($url=https://xfrocks.com/api/index.php?updater&_version=2016050601&ids[]=anonymous_posting): status=200, json=array (
+  'anonymous_posting' => 
+  array (
+    'addon_id' => 'anonymous_posting',
+    'version_id' => 2030200,
+    'version_string' => '2.3.2',
+    'links' => 
+    array (
+      'permalink' => 'https://xfrocks.com/resources/bd-anonymous-posting.28/',
+      'content' => 'https://xfrocks.com/api/index.php?resources/28/file',
+    ),
+  ),
+)
+2017-05-31 07:42:10 AnonymousPosting_ShippableHelper_UpdaterCore::_fetchData($url=https://xfrocks.com/api/index.php?updater&_version=2016050601&ids[]=anonymous_posting): status=200, json=array (
+  'anonymous_posting' => 
+  array (
+    'addon_id' => 'anonymous_posting',
+    'version_id' => 2030200,
+    'version_string' => '2.3.2',
+    'links' => 
+    array (
+      'permalink' => 'https://xfrocks.com/resources/bd-anonymous-posting.28/',
+      'content' => 'https://xfrocks.com/api/index.php?resources/28/file',
+    ),
+  ),
+)
+2017-06-10 06:54:55 AnonymousPosting_ShippableHelper_UpdaterCore::_fetchData($url=https://xfrocks.com/api/index.php?updater&_version=2016050601&ids[]=anonymous_posting): status=200, json=array (
+  'anonymous_posting' => 
+  array (
+    'addon_id' => 'anonymous_posting',
+    'version_id' => 2030200,
+    'version_string' => '2.3.2',
+    'links' => 
+    array (
+      'permalink' => 'https://xfrocks.com/resources/bd-anonymous-posting.28/',
+      'content' => 'https://xfrocks.com/api/index.php?resources/28/file',
+    ),
+  ),
+)
+2017-06-12 03:21:20 AnonymousPosting_ShippableHelper_UpdaterCore::_fetchData($url=https://xfrocks.com/api/index.php?updater&_version=2016050601&ids[]=anonymous_posting): status=200, json=array (
+  'anonymous_posting' => 
+  array (
+    'addon_id' => 'anonymous_posting',
+    'version_id' => 2030200,
+    'version_string' => '2.3.2',
+    'links' => 
+    array (
+      'permalink' => 'https://xfrocks.com/resources/bd-anonymous-posting.28/',
+      'content' => 'https://xfrocks.com/api/index.php?resources/28/file',
+    ),
+  ),
+)
+2017-06-16 08:13:16 AnonymousPosting_ShippableHelper_UpdaterCore::_fetchData($url=https://xfrocks.com/api/index.php?updater&_version=2016050601&ids[]=anonymous_posting): status=200, json=array (
+  'anonymous_posting' => 
+  array (
+    'addon_id' => 'anonymous_posting',
+    'version_id' => 2030200,
+    'version_string' => '2.3.2',
+    'links' => 
+    array (
+      'permalink' => 'https://xfrocks.com/resources/bd-anonymous-posting.28/',
+      'content' => 'https://xfrocks.com/api/index.php?resources/28/file',
+    ),
+  ),
+)

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="KomuKu_PostAreas" title="Post Areas" version_string="1.4.3" version_id="10" url="https://xenforo.com/community/resources/post-areas.4152/" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+  <admin_navigation/>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates/>
+  <admin_template_modifications/>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="KomuKu_PostAreas_Listener_LoadClassController" callback_method="extendMember" active="1" hint="" description=""/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups>
+    <group group_id="KomuKu_PostAreas" display_order="4000" debug_only="0"/>
+    <option option_id="PostAreas_MaxForums" edit_format="spinbox" data_type="integer" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params>min=0</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKu_PostAreas" display_order="1"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups/>
+    <permissions/>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="KomuKu_post_areas_no_posts" version_id="3" version_string="1.2.0"><![CDATA[This user hasn't posted anything yet.]]></phrase>
+    <phrase title="KomuKu_post_areas_tab_name" version_id="1" version_string="1.0.0"><![CDATA[Post Areas]]></phrase>
+    <phrase title="option_group_KomuKu_PostAreas" version_id="6" version_string="1.3.1"><![CDATA[Post Areas]]></phrase>
+    <phrase title="option_group_KomuKu_PostAreas_description" version_id="6" version_string="1.3.1"><![CDATA[]]></phrase>
+    <phrase title="option_PostAreas_MaxForums" version_id="6" version_string="1.3.1"><![CDATA[Maximum number of forums]]></phrase>
+    <phrase title="option_PostAreas_MaxForums_explain" version_id="6" version_string="1.3.1"><![CDATA[The maximum number of forums that are shown. Enter 0 for no limitation.]]></phrase>
+  </phrases>
+  <route_prefixes/>
+  <style_properties/>
+  <templates>
+    <template title="KomuKu_post_areas_tab_content.css" version_id="4" version_string="1.2.1"><![CDATA[#PostAreas .header
+{
+  font-weight: bold;
+  padding-bottom: 5px;
+
+}
+
+#PostAreas .post_counts_column,
+#PostAreas .thread_counts_column
+{
+  padding-left: 25px;
+  text-align: right;
+}]]></template>
+  </templates>
+  <public_template_modifications>
+    <modification template="member_view" modification_key="KomuKu_postareas1_up_tab_content" description="Shows the content of the Post Areas tab" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[<xen:hook name="member_view_tabs_content" params="{xen:array 'user={$user}'}" />]]></find>
+      <replace><![CDATA[<style> <xen:include template="KomuKu_post_areas_tab_content.css" /> </style>
+
+<li id="PostAreas" class="profileContent">
+  <div class="primaryContent">
+  <xen:if is="isset({$postAreas})">
+    <table>
+      <thead>
+        <tr> 
+          <td class='header forum_title_column'> {xen:phrase forum} </td>
+          <xen:if is="{$hasCreatedAThread}">
+             <td class='header thread_counts_column'> {xen:phrase threads} </td>
+          </xen:if>
+          <td class='header post_counts_column'> {xen:phrase posts} </td>        
+      </thead>    
+      <tbody>
+        <xen:foreach loop="$postAreas" key="$key" value="$entry">
+        <tr>
+              <td class="forum_title_column"> <a href='{xen:link forums, {xen:array 'node_id={$postAreas.{$key}.node_id}'}}' rel="nofollow"> {$entry.title} </a> </td>
+              <xen:if is="{$hasCreatedAThread}">
+                <td class="thread_counts_column"> 
+                  <a href='{xen:link search/search, '', 'users={$user.username}', 'user_content=thread', 'child_nodes=0', 'nodes={xen:array '0={$postAreas.{$key}.node_id}'}'}'> {$entry.thread_count} </a>
+                </td>
+              </xen:if>
+              <td class="post_counts_column"> 
+                <a href='{xen:link search/search, '', 'users={$user.username}', 'user_content=post', 'child_nodes=0', 'nodes={xen:array '0={$postAreas.{$key}.node_id}'}'}'> {$entry.post_count} </a>
+              </td>
+        </tr> 
+      </xen:foreach>
+      </tbody>
+    </table>
+  <xen:else />
+    <span> {xen:phrase KomuKu_post_areas_no_posts} </span>
+  </xen:if>
+  </div>
+</li>
+
+$0]]></replace>
+    </modification>
+    <modification template="member_view" modification_key="KomuKu_postareas1_up_tab_heading" description="The Post Areas tab heading" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[<xen:hook name="member_view_tabs_heading" params="{xen:array 'user={$user}'}" />]]></find>
+      <replace><![CDATA[<li><a href="{$requestPaths.requestUri}#PostAreas"> {xen:phrase KomuKu_post_areas_tab_name} </a></li>
+$0]]></replace>
+    </modification>
+  </public_template_modifications>
+  <bb_code_media_sites/>
+  <bb_codes/>
+</addon>

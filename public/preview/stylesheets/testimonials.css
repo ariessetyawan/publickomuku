@@ -1,0 +1,99 @@
+.testimonial-item h1 > span{
+    color: #000;
+    font-size: 48px;
+    line-height: 48px;
+    padding: 10px;
+    font-weight: normal;
+    font-family:"Open_Sans_L";
+}
+.testimonial-item h1 > span > strong{
+    font-family:"Open_Sans_B";
+}
+
+.testimonial-item h1 > span > strong{
+    font-family:"Open_Sans_B";
+}
+
+.testimonial-item h1 > span > cite{
+    font-family:"Open_Sans_L";
+}
+
+#testimonials div {
+    color: #fff;
+    font-size: 25px;
+    font-weight: 300;
+    line-height: 35px;
+    margin-bottom: 10px;
+    position: relative;
+}
+#testimonials .tab {
+    background: none repeat scroll 0 0 transparent;
+    border: medium none;
+    margin: 0;
+}
+#testimonials .tab a {
+    background-color: #ccc;
+    border-radius: 10px 10px 10px 10px;
+    height: 20px;
+    padding: 0px;
+    text-indent: -99999px;
+    width: 20px;
+}
+#testimonials .tab a.active, #testimonials .tab a:hover {
+    background: none repeat scroll 0 0 #000000;
+    position: relative;
+    z-index: 3;
+}
+#testimonials .panel-container {
+    border: medium none;
+}
+#testimonials .tab a.active, #testimonials .tab a:hover {
+    background: none repeat scroll 0 0 #000000;
+}
+.etabs {
+    margin: 0;
+    padding: 0;
+    overflow: inherit;
+}
+.tab {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+    zoom: 1;
+    *display: inline;
+    background: #f9f9f9;
+    border: 1px solid #e7e7e7;
+    border-bottom: none;
+    top: 1px;
+    position: relative;
+    z-index: 1;
+    margin-right: 1px;
+}
+.tab:before {
+    display: none
+}
+.tab a {
+    display: block;
+    padding: 7px 17px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #616161;
+}
+.tab a.active,
+.tab a:hover {
+    color: #000000
+}
+.tab.active {
+    background: #fff;
+    position: relative;
+    z-index: 3;
+}
+.tab-container .panel-container {
+    border-top: 1px solid #e7e7e7;
+    position: relative;
+    z-index: 1;
+}
+.tab-container .panel-container div.tab-block {
+    padding: 20px 0 0 0
+}
+

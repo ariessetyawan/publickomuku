@@ -1,0 +1,33 @@
+<?php
+
+return [
+    'bahasadilogin' => 'Select Language',
+	'indonesia' => 'Indonesian',
+	'asingUK' => 'English (UK)',
+	'username' => 'Username Or E-Mail',
+	'password' => 'Password',
+	'banner1login' => 'Let is explore the Brotherhood Together',
+	'banner2login' => 'Please enter your Username and Password',
+	'lupapassword' => 'Forgot Password',
+	'signin' => 'Sign In',
+	'signup' => 'Sign Up',
+	'separator' => 'Or Login With',
+	'forum' => 'Forum',
+	'jualbeli' => 'Sell and Buy',
+	'feedback' => 'FeedBack',
+	'pencarian' => 'Search friends, photos, videos',
+	'disini'	=> 'In Here',
+	'title' => 'The Most Solid and Enjoyable Community :: KomuKu World',
+	'pesanlogin' => 'Be Komuku Big Family :: Make ID card',
+	'pesanregister' => 'Oooopss...., sorry my brosis, already have an ID card Komuku :: Please login',
+	//register
+	'namalengkap' => 'Your Full Name',
+	'emailanda'	=> 'Your Valid E-Mail',
+	'jenisL' => 'I am Man',
+	'jenisP' => 'I am Woman',
+	'password' => 'Type your password',
+	'informasiemail' => 'Users must verify their E-Mail',
+	'gantisoal' => 'Change Question',
+	'menyerah' => 'Buuu, give up. are you sure ?',
+	'jawaban' => 'Answer ?',
+];

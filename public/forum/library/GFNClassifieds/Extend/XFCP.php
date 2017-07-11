@@ -1,0 +1,43 @@
+<?php /*2f9dc807eb4aace524c8ddd1fd41294611c2a148*/
+
+class XFCP_GFNClassifieds_Extend_XenForo_Model_User extends XenForo_Model_User { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_ControllerPublic_Thread extends XenForo_ControllerPublic_Thread { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_Model_Attachment extends XenForo_Model_Attachment { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_ControllerPublic_Attachment extends XenForo_ControllerPublic_Attachment { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_DataWriter_AttachmentData extends XenForo_DataWriter_AttachmentData { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_ViewPublic_Attachment_DoUpload extends XenForo_ViewPublic_Attachment_DoUpload { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_ViewPublic_Thread_View extends XenForo_ViewPublic_Thread_View { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_Model_Thread extends XenForo_Model_Thread { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_ControllerPublic_Conversation extends XenForo_ControllerPublic_Conversation { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_Model_Conversation extends XenForo_Model_Conversation { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_DataWriter_ConversationMaster extends XenForo_DataWriter_ConversationMaster { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_Model_NewsFeed extends XenForo_Model_NewsFeed { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_ControllerPublic_Member extends XenForo_ControllerPublic_Member { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_DataWriter_User extends XenForo_DataWriter_User { }
+
+class XFCP_GFNClassifieds_Extend_bdPaygate_Model_Processor extends bdPaygate_Model_Processor { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_ControllerPublic_Account extends XenForo_ControllerPublic_Account { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_ControllerPublic_Watched extends XenForo_ControllerPublic_Watched { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_Model_Counters extends XenForo_Model_Counters { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_ViewPublic_Conversation_View extends XenForo_ViewPublic_Conversation_View { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_ControllerPublic_Forum extends XenForo_ControllerPublic_Forum { }
+
+class XFCP_GFNClassifieds_Extend_XenForo_ControllerPublic_FindNew extends XenForo_ControllerPublic_FindNew { }

@@ -1,0 +1,24 @@
+<?php
+
+class XFCP_phc_AlphabeticalXF_Extend_XenForo_Model_Thread extends XenForo_Model_Thread {}
+
+class XFCP_phc_AlphabeticalXF_Extend_XenForo_ControllerPublic_Conversation extends XenForo_ControllerPublic_Conversation {}
+
+class XFCP_phc_AlphabeticalXF_Extend_XenForo_ControllerPublic_Forum extends XenForo_ControllerPublic_Forum {}
+
+class XFCP_phc_AlphabeticalXF_Extend_XenForo_ControllerPublic_Member extends XenForo_ControllerPublic_Member {}
+
+class XFCP_phc_AlphabeticalXF_Extend_XenForo_Model_Conversation extends Model_Conversation {}
+
+class XFCP_phc_AlphabeticalXF_Extend_XenForo_Model_User extends XenForo_Model_User {}
+
+class XFCP_phc_AlphabeticalXF_Extend_XenGallery_ControllerPublic_Album extends XenGallery_ControllerPublic_Album {}
+
+class XFCP_phc_AlphabeticalXF_Extend_XenGallery_Model_Album extends XenGallery_Model_Album {}
+
+class XFCP_phc_AlphabeticalXF_Extend_XenGallery_Model_Category extends XenGallery_Model_Category {}
+
+class XFCP_phc_AlphabeticalXF_Extend_XenResource_ControllerPublic_Resource extends XenResource_ControllerPublic_Resource {}
+
+class XFCP_phc_AlphabeticalXF_Extend_XenResource_Model_Resource extends XenResource_Model_Resource {}
+

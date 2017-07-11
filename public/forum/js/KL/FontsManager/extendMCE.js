@@ -1,0 +1,1 @@
+!function(a,e,f,d){typeof xenMCE.onSetup===d&&(xenMCE.onSetup=[]);xenMCE.onSetup.push(function(c){a.each(fontlinks.links,function(a,b){c.contentCSS.push(b)});a.each(fontlinks.styles,function(a,b){c.contentStyles.push(b)})})}(jQuery,this,document,"undefined");

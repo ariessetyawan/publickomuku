@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="GFNCore" title="GoodForNothing Core" version_string="1.0.0 Beta 1" version_id="1000031" url="https://gfnlabs.com/" install_callback_class="GFNCore_Installer" install_callback_method="install" uninstall_callback_class="GFNCore_Installer" uninstall_callback_method="uninstall">
+  <admin_navigation/>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates>
+    <template title="gfncore_option_list"><![CDATA[<xen:title>{xen:phrase options}: {$group.title}</xen:title>
+<xen:h1>{$group.title}</xen:h1>
+
+<xen:container var="$head.optionCss">
+<style>
+.hiddenOption   { display: inline-block; font-size: 9px; margin-right: 3px; color: {xen:property mutedTextColor}; }
+.hiddenOption a { position: static; }
+.optionList a.optionAnchor { position: absolute; top: -80px; } /* prevents anchors pointing going under the fixed header */
+</style>
+</xen:container>
+
+<xen:if is="{$canEditGroup}">
+	<xen:topctrl>
+		<a href="{xen:adminlink 'options/add-option', '', "group_id={$group.group_id}"}" class="button">+ {xen:phrase add_option}</a>
+		<a class="button" href="{xen:adminlink 'options/display-order', $group}">{xen:phrase display_order}</a>
+		<a class="button" href="{xen:adminlink 'options/edit-group', $group}">{xen:phrase edit_group}</a>
+	</xen:topctrl>
+</xen:if>
+
+<xen:form action="{xen:adminlink 'options/save', $group}">
+	
+	<div class="topChoosers">
+		<div class="Popup">
+			<span class="muted">{xen:phrase option_groups}:</span> <a rel="Menu">{$group.title}</a>
+			<div class="Menu">
+				<div class="primaryContent menuHeader"><h3>{xen:phrase option_groups}</h3></div>
+				<ul class="secondaryContent blockLinksList">
+				<xen:foreach loop="$groups" value="$_group">
+					<li><a href="{xen:adminlink 'options/list', $_group}">{$_group.title}</a></li>
+				</xen:foreach>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<xen:if hascontent="true"><div class="optionGroupDescription muted"><i><xen:contentcheck>{xen:raw $group.description}</xen:contentcheck></i></div></xen:if>
+	
+	<ul class="tabs Tabs mainTabs" data-panes="#OptionPanes > li" data-history="on">
+		<xen:foreach loop="$tabTitles" key="$tabId" value="$tabTitle">
+			<li><a href="{$requestPaths.requestUri}#_tab{$tabId}">{$tabTitle}</a></li>
+		</xen:foreach>
+	</ul>
+	
+	<ul id="OptionPanes">
+		<xen:foreach loop="$renderedOptions" key="$tabId" value="$_tab">
+			<xen:if hascontent="true">
+				<li id="_tab{$tabId}">
+					<xen:contentcheck>
+						<xen:foreach loop="$_tab" value="$_group">
+							<fieldset class="optionList">
+								<xen:foreach loop="$_group" key="$optionId" value="$renderedOption">
+									{xen:raw $renderedOption}
+								</xen:foreach>
+							</fieldset>
+						</xen:foreach>
+					</xen:contentcheck>
+				</li>
+			</xen:if>
+		</xen:foreach>
+	</ul>
+
+	<xen:submitunit save="{xen:phrase save_changes}">
+		<input type="reset" class="button" value="{xen:phrase cancel}" accesskey="r" />
+	</xen:submitunit>
+</xen:form>]]></template>
+    <template title="gfncore_system_option_view"><![CDATA[<xen:title>{xen:phrase system_options}</xen:title>
+<xen:h1>{xen:phrase system_options}: <em>{$page.title}</em></xen:h1>
+
+<xen:container var="$head.optionCss">
+	<style>
+		.hiddenOption   { display: inline-block; font-size: 9px; margin-right: 3px; color: {xen:property mutedTextColor}; }
+		.hiddenOption a { position: static; }
+		.optionList a.optionAnchor { position: absolute; top: -80px; } /* prevents anchors pointing going under the fixed header */
+	</style>
+</xen:container>
+
+<xen:if is="{$canEditGroup}">
+	<xen:topctrl>
+		<a href="{xen:adminlink 'options/add-option', '', "group_id={$group.group_id}"}" class="button">+ {xen:phrase add_option}</a>
+		<a class="button" href="{xen:adminlink 'options/display-order', $group}">{xen:phrase display_order}</a>
+		<a class="button" href="{xen:adminlink 'options/edit-group', $group}">{xen:phrase edit_group}</a>
+	</xen:topctrl>
+</xen:if>
+
+<xen:form action="{xen:raw $saveLink}" class="AutoValidator">
+	<div class="topChoosers">
+		<div class="Popup">
+			<span class="muted">{xen:phrase page}:</span> <a rel="Menu">{$page.title}</a>
+			<div class="Menu">
+				<div class="primaryContent menuHeader"><h3>{xen:phrase pages}</h3></div>
+				<ul class="secondaryContent blockLinksList">
+					<xen:foreach loop="$pages" value="$_page">
+						<li><a href="{xen:raw $_page.link}">{$_page.title}</a></li>
+					</xen:foreach>
+				</ul>
+			</div>
+		</div>
+	</div>
+	
+	<xen:foreach loop="$renderedOptions" value="$_group">
+		<xen:if hascontent="true">
+			<fieldset class="optionList">
+				<xen:contentcheck>
+					<xen:foreach loop="$_group" key="$optionId" value="$renderedOption">
+						{xen:raw $renderedOption}
+					</xen:foreach>
+				</xen:contentcheck>
+			</fieldset>
+		</xen:if>
+	</xen:foreach>
+
+	<xen:submitunit save="{xen:phrase save_changes}">
+		<input type="reset" class="button" value="{xen:phrase cancel}" accesskey="r" />
+	</xen:submitunit>
+</xen:form>]]></template>
+  </admin_templates>
+  <admin_template_modifications/>
+  <code_events>
+    <event event_id="gfncore_cache_source"><![CDATA[<p>Called while re-caching of expired transient data to make sure that the new values are set.</p>
+
+<p>Callback signature:</p>
+<blockquote><code>$itemName, &$itemValue, &$lifetime</code></blockquote>
+
+<p>Arguments:</p>
+<ol>
+	<li><code><em>string</em> $itemName</code> - the name of the item to be re-cached</li>
+	<li><code><em>mixed</em> &$itemValue</code> - the new value for the named item.</li>
+	<li><code><em>integer</em> &$lifetime</code> - how long the new value will be retained.</li>
+</ol>
+
+<p><b>Event Hint:</b> Name of the item that is being re-cached.</p>]]></event>
+    <event event_id="gfncore_init"><![CDATA[<p>Called when the GFNCore_Application object is initialized.</p>
+
+<p>Callback signature:</p>
+<blockquote><code><em>GFNCore_Application</em> $core</code></blockquote>
+
+<p>Arguments:</p>
+<ol>
+	<li><code><em>GFNCore_Application</em> $core</code></li>
+</ol>]]></event>
+  </code_events>
+  <code_event_listeners>
+    <listener event_id="init_dependencies" execute_order="100" callback_class="GFNCore_Application" callback_method="init" active="1" hint="" description="Initializes application's core..."/>
+    <listener event_id="template_create" execute_order="1" callback_class="GFNCore_Listener_Template" callback_method="createAdminOptionList" active="1" hint="option_list" description="Adds tabs to options list page for better user experience..."/>
+  </code_event_listeners>
+  <cron>
+    <entry entry_id="gfncore_cleanUpDataCache" cron_class="GFNCore_CronEntry_DataCache" cron_method="run" active="1"><![CDATA[{"day_type":"dom","dom":["-1"],"hours":["-1"],"minutes":["-1"]}]]></entry>
+  </cron>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups/>
+  <permissions>
+    <permission_groups/>
+    <permissions/>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="cron_entry_gfncore_cleanUpDataCache" version_id="1000013" version_string="1.0.0 Alpha 3"><![CDATA[Clean Up Data Cache]]></phrase>
+    <phrase title="option_group_gfncore" version_id="1000012" version_string="1.0.0 Alpha 2"><![CDATA[GoodForNothing Core - Setup]]></phrase>
+    <phrase title="option_group_gfncore_description" version_id="1000012" version_string="1.0.0 Alpha 2"><![CDATA[One time set-up for the core application of <b>GoodForNothing</b> add-ons]]></phrase>
+    <phrase title="pages" version_id="1000017" version_string="1.0.0 Alpha 7"><![CDATA[Pages]]></phrase>
+    <phrase title="system_options" version_id="1000017" version_string="1.0.0 Alpha 7"><![CDATA[System Options]]></phrase>
+    <phrase title="xenforo_addon_by_gfnlabs" version_id="1000014" version_string="1.0.0 Alpha 4"><![CDATA[XenForo Add-on by GoodForNothing&trade; Labs.]]></phrase>
+  </phrases>
+  <route_prefixes/>
+  <style_properties/>
+  <templates/>
+  <public_template_modifications/>
+  <bb_code_media_sites/>
+  <bb_codes/>
+</addon>

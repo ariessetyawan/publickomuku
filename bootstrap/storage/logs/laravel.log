@@ -1,0 +1,77 @@
+[2017-06-06 13:31:04] production.ERROR: InvalidArgumentException: The "" directory does not exist. in /home/wondersw/corekomuku/vendor/symfony/finder/Finder.php:546
+Stack trace:
+#0 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(86): Symfony\Component\Finder\Finder->in(false)
+#1 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(63): Illuminate\Foundation\Bootstrap\LoadConfiguration->getConfigurationFiles(Object(App\GoPublic))
+#2 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(39): Illuminate\Foundation\Bootstrap\LoadConfiguration->loadConfigurationFiles(Object(App\GoPublic), Object(Illuminate\Config\Repository))
+#3 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(208): Illuminate\Foundation\Bootstrap\LoadConfiguration->bootstrap(Object(App\GoPublic))
+#4 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(160): Illuminate\Foundation\Application->bootstrapWith(Array)
+#5 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->bootstrap()
+#6 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(116): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter(Object(Illuminate\Http\Request))
+#7 /home/wondersw/public_html/index.php(56): Illuminate\Foundation\Http\Kernel->handle(Object(Illuminate\Http\Request))
+#8 {main}  
+[2017-06-06 13:31:05] production.ERROR: InvalidArgumentException: The "" directory does not exist. in /home/wondersw/corekomuku/vendor/symfony/finder/Finder.php:546
+Stack trace:
+#0 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(86): Symfony\Component\Finder\Finder->in(false)
+#1 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(63): Illuminate\Foundation\Bootstrap\LoadConfiguration->getConfigurationFiles(Object(App\GoPublic))
+#2 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(39): Illuminate\Foundation\Bootstrap\LoadConfiguration->loadConfigurationFiles(Object(App\GoPublic), Object(Illuminate\Config\Repository))
+#3 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(208): Illuminate\Foundation\Bootstrap\LoadConfiguration->bootstrap(Object(App\GoPublic))
+#4 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(160): Illuminate\Foundation\Application->bootstrapWith(Array)
+#5 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->bootstrap()
+#6 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(116): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter(Object(Illuminate\Http\Request))
+#7 /home/wondersw/public_html/index.php(56): Illuminate\Foundation\Http\Kernel->handle(Object(Illuminate\Http\Request))
+#8 {main}  
+[2017-06-06 13:31:06] production.ERROR: InvalidArgumentException: The "" directory does not exist. in /home/wondersw/corekomuku/vendor/symfony/finder/Finder.php:546
+Stack trace:
+#0 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(86): Symfony\Component\Finder\Finder->in(false)
+#1 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(63): Illuminate\Foundation\Bootstrap\LoadConfiguration->getConfigurationFiles(Object(App\GoPublic))
+#2 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(39): Illuminate\Foundation\Bootstrap\LoadConfiguration->loadConfigurationFiles(Object(App\GoPublic), Object(Illuminate\Config\Repository))
+#3 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(208): Illuminate\Foundation\Bootstrap\LoadConfiguration->bootstrap(Object(App\GoPublic))
+#4 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(160): Illuminate\Foundation\Application->bootstrapWith(Array)
+#5 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->bootstrap()
+#6 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(116): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter(Object(Illuminate\Http\Request))
+#7 /home/wondersw/public_html/index.php(56): Illuminate\Foundation\Http\Kernel->handle(Object(Illuminate\Http\Request))
+#8 {main}  
+[2017-06-06 13:31:07] production.ERROR: InvalidArgumentException: The "" directory does not exist. in /home/wondersw/corekomuku/vendor/symfony/finder/Finder.php:546
+Stack trace:
+#0 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(86): Symfony\Component\Finder\Finder->in(false)
+#1 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(63): Illuminate\Foundation\Bootstrap\LoadConfiguration->getConfigurationFiles(Object(App\GoPublic))
+#2 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(39): Illuminate\Foundation\Bootstrap\LoadConfiguration->loadConfigurationFiles(Object(App\GoPublic), Object(Illuminate\Config\Repository))
+#3 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(208): Illuminate\Foundation\Bootstrap\LoadConfiguration->bootstrap(Object(App\GoPublic))
+#4 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(160): Illuminate\Foundation\Application->bootstrapWith(Array)
+#5 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->bootstrap()
+#6 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(116): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter(Object(Illuminate\Http\Request))
+#7 /home/wondersw/public_html/index.php(56): Illuminate\Foundation\Http\Kernel->handle(Object(Illuminate\Http\Request))
+#8 {main}  
+[2017-06-06 13:31:07] production.ERROR: InvalidArgumentException: The "" directory does not exist. in /home/wondersw/corekomuku/vendor/symfony/finder/Finder.php:546
+Stack trace:
+#0 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(86): Symfony\Component\Finder\Finder->in(false)
+#1 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(63): Illuminate\Foundation\Bootstrap\LoadConfiguration->getConfigurationFiles(Object(App\GoPublic))
+#2 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(39): Illuminate\Foundation\Bootstrap\LoadConfiguration->loadConfigurationFiles(Object(App\GoPublic), Object(Illuminate\Config\Repository))
+#3 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(208): Illuminate\Foundation\Bootstrap\LoadConfiguration->bootstrap(Object(App\GoPublic))
+#4 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(160): Illuminate\Foundation\Application->bootstrapWith(Array)
+#5 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->bootstrap()
+#6 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(116): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter(Object(Illuminate\Http\Request))
+#7 /home/wondersw/public_html/index.php(56): Illuminate\Foundation\Http\Kernel->handle(Object(Illuminate\Http\Request))
+#8 {main}  
+[2017-06-06 13:31:07] production.ERROR: InvalidArgumentException: The "" directory does not exist. in /home/wondersw/corekomuku/vendor/symfony/finder/Finder.php:546
+Stack trace:
+#0 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(86): Symfony\Component\Finder\Finder->in(false)
+#1 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(63): Illuminate\Foundation\Bootstrap\LoadConfiguration->getConfigurationFiles(Object(App\GoPublic))
+#2 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(39): Illuminate\Foundation\Bootstrap\LoadConfiguration->loadConfigurationFiles(Object(App\GoPublic), Object(Illuminate\Config\Repository))
+#3 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(208): Illuminate\Foundation\Bootstrap\LoadConfiguration->bootstrap(Object(App\GoPublic))
+#4 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(160): Illuminate\Foundation\Application->bootstrapWith(Array)
+#5 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->bootstrap()
+#6 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(116): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter(Object(Illuminate\Http\Request))
+#7 /home/wondersw/public_html/index.php(56): Illuminate\Foundation\Http\Kernel->handle(Object(Illuminate\Http\Request))
+#8 {main}  
+[2017-06-06 13:31:07] production.ERROR: InvalidArgumentException: The "" directory does not exist. in /home/wondersw/corekomuku/vendor/symfony/finder/Finder.php:546
+Stack trace:
+#0 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(86): Symfony\Component\Finder\Finder->in(false)
+#1 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(63): Illuminate\Foundation\Bootstrap\LoadConfiguration->getConfigurationFiles(Object(App\GoPublic))
+#2 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/LoadConfiguration.php(39): Illuminate\Foundation\Bootstrap\LoadConfiguration->loadConfigurationFiles(Object(App\GoPublic), Object(Illuminate\Config\Repository))
+#3 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(208): Illuminate\Foundation\Bootstrap\LoadConfiguration->bootstrap(Object(App\GoPublic))
+#4 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(160): Illuminate\Foundation\Application->bootstrapWith(Array)
+#5 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->bootstrap()
+#6 /home/wondersw/corekomuku/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(116): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter(Object(Illuminate\Http\Request))
+#7 /home/wondersw/public_html/index.php(56): Illuminate\Foundation\Http\Kernel->handle(Object(Illuminate\Http\Request))
+#8 {main}  

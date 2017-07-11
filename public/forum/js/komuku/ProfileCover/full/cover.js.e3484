@@ -1,0 +1,518 @@
+/*!
+ * imagesLoaded PACKAGED v3.1.8
+ * JavaScript is all like "You images are done yet or what?"
+ * MIT License
+ */
+
+(function(){function e(){}function t(e,t){for(var n=e.length;n--;)if(e[n].listener===t)return n;return-1}function n(e){return function(){return this[e].apply(this,arguments)}}var i=e.prototype,r=this,o=r.EventEmitter;i.getListeners=function(e){var t,n,i=this._getEvents();if("object"==typeof e){t={};for(n in i)i.hasOwnProperty(n)&&e.test(n)&&(t[n]=i[n])}else t=i[e]||(i[e]=[]);return t},i.flattenListeners=function(e){var t,n=[];for(t=0;e.length>t;t+=1)n.push(e[t].listener);return n},i.getListenersAsObject=function(e){var t,n=this.getListeners(e);return n instanceof Array&&(t={},t[e]=n),t||n},i.addListener=function(e,n){var i,r=this.getListenersAsObject(e),o="object"==typeof n;for(i in r)r.hasOwnProperty(i)&&-1===t(r[i],n)&&r[i].push(o?n:{listener:n,once:!1});return this},i.on=n("addListener"),i.addOnceListener=function(e,t){return this.addListener(e,{listener:t,once:!0})},i.once=n("addOnceListener"),i.defineEvent=function(e){return this.getListeners(e),this},i.defineEvents=function(e){for(var t=0;e.length>t;t+=1)this.defineEvent(e[t]);return this},i.removeListener=function(e,n){var i,r,o=this.getListenersAsObject(e);for(r in o)o.hasOwnProperty(r)&&(i=t(o[r],n),-1!==i&&o[r].splice(i,1));return this},i.off=n("removeListener"),i.addListeners=function(e,t){return this.manipulateListeners(!1,e,t)},i.removeListeners=function(e,t){return this.manipulateListeners(!0,e,t)},i.manipulateListeners=function(e,t,n){var i,r,o=e?this.removeListener:this.addListener,s=e?this.removeListeners:this.addListeners;if("object"!=typeof t||t instanceof RegExp)for(i=n.length;i--;)o.call(this,t,n[i]);else for(i in t)t.hasOwnProperty(i)&&(r=t[i])&&("function"==typeof r?o.call(this,i,r):s.call(this,i,r));return this},i.removeEvent=function(e){var t,n=typeof e,i=this._getEvents();if("string"===n)delete i[e];else if("object"===n)for(t in i)i.hasOwnProperty(t)&&e.test(t)&&delete i[t];else delete this._events;return this},i.removeAllListeners=n("removeEvent"),i.emitEvent=function(e,t){var n,i,r,o,s=this.getListenersAsObject(e);for(r in s)if(s.hasOwnProperty(r))for(i=s[r].length;i--;)n=s[r][i],n.once===!0&&this.removeListener(e,n.listener),o=n.listener.apply(this,t||[]),o===this._getOnceReturnValue()&&this.removeListener(e,n.listener);return this},i.trigger=n("emitEvent"),i.emit=function(e){var t=Array.prototype.slice.call(arguments,1);return this.emitEvent(e,t)},i.setOnceReturnValue=function(e){return this._onceReturnValue=e,this},i._getOnceReturnValue=function(){return this.hasOwnProperty("_onceReturnValue")?this._onceReturnValue:!0},i._getEvents=function(){return this._events||(this._events={})},e.noConflict=function(){return r.EventEmitter=o,e},"function"==typeof define&&define.amd?define("eventEmitter/EventEmitter",[],function(){return e}):"object"==typeof module&&module.exports?module.exports=e:this.EventEmitter=e}).call(this),function(e){function t(t){var n=e.event;return n.target=n.target||n.srcElement||t,n}var n=document.documentElement,i=function(){};n.addEventListener?i=function(e,t,n){e.addEventListener(t,n,!1)}:n.attachEvent&&(i=function(e,n,i){e[n+i]=i.handleEvent?function(){var n=t(e);i.handleEvent.call(i,n)}:function(){var n=t(e);i.call(e,n)},e.attachEvent("on"+n,e[n+i])});var r=function(){};n.removeEventListener?r=function(e,t,n){e.removeEventListener(t,n,!1)}:n.detachEvent&&(r=function(e,t,n){e.detachEvent("on"+t,e[t+n]);try{delete e[t+n]}catch(i){e[t+n]=void 0}});var o={bind:i,unbind:r};"function"==typeof define&&define.amd?define("eventie/eventie",o):e.eventie=o}(this),function(e,t){"function"==typeof define&&define.amd?define(["eventEmitter/EventEmitter","eventie/eventie"],function(n,i){return t(e,n,i)}):"object"==typeof exports?module.exports=t(e,require("wolfy87-eventemitter"),require("eventie")):e.imagesLoaded=t(e,e.EventEmitter,e.eventie)}(window,function(e,t,n){function i(e,t){for(var n in t)e[n]=t[n];return e}function r(e){return"[object Array]"===d.call(e)}function o(e){var t=[];if(r(e))t=e;else if("number"==typeof e.length)for(var n=0,i=e.length;i>n;n++)t.push(e[n]);else t.push(e);return t}function s(e,t,n){if(!(this instanceof s))return new s(e,t);"string"==typeof e&&(e=document.querySelectorAll(e)),this.elements=o(e),this.options=i({},this.options),"function"==typeof t?n=t:i(this.options,t),n&&this.on("always",n),this.getImages(),a&&(this.jqDeferred=new a.Deferred);var r=this;setTimeout(function(){r.check()})}function f(e){this.img=e}function c(e){this.src=e,v[e]=this}var a=e.jQuery,u=e.console,h=u!==void 0,d=Object.prototype.toString;s.prototype=new t,s.prototype.options={},s.prototype.getImages=function(){this.images=[];for(var e=0,t=this.elements.length;t>e;e++){var n=this.elements[e];"IMG"===n.nodeName&&this.addImage(n);var i=n.nodeType;if(i&&(1===i||9===i||11===i))for(var r=n.querySelectorAll("img"),o=0,s=r.length;s>o;o++){var f=r[o];this.addImage(f)}}},s.prototype.addImage=function(e){var t=new f(e);this.images.push(t)},s.prototype.check=function(){function e(e,r){return t.options.debug&&h&&u.log("confirm",e,r),t.progress(e),n++,n===i&&t.complete(),!0}var t=this,n=0,i=this.images.length;if(this.hasAnyBroken=!1,!i)return this.complete(),void 0;for(var r=0;i>r;r++){var o=this.images[r];o.on("confirm",e),o.check()}},s.prototype.progress=function(e){this.hasAnyBroken=this.hasAnyBroken||!e.isLoaded;var t=this;setTimeout(function(){t.emit("progress",t,e),t.jqDeferred&&t.jqDeferred.notify&&t.jqDeferred.notify(t,e)})},s.prototype.complete=function(){var e=this.hasAnyBroken?"fail":"done";this.isComplete=!0;var t=this;setTimeout(function(){if(t.emit(e,t),t.emit("always",t),t.jqDeferred){var n=t.hasAnyBroken?"reject":"resolve";t.jqDeferred[n](t)}})},a&&(a.fn.imagesLoaded=function(e,t){var n=new s(this,e,t);return n.jqDeferred.promise(a(this))}),f.prototype=new t,f.prototype.check=function(){var e=v[this.img.src]||new c(this.img.src);if(e.isConfirmed)return this.confirm(e.isLoaded,"cached was confirmed"),void 0;if(this.img.complete&&void 0!==this.img.naturalWidth)return this.confirm(0!==this.img.naturalWidth,"naturalWidth"),void 0;var t=this;e.on("confirm",function(e,n){return t.confirm(e.isLoaded,n),!0}),e.check()},f.prototype.confirm=function(e,t){this.isLoaded=e,this.emit("confirm",this,t)};var v={};return c.prototype=new t,c.prototype.check=function(){if(!this.isChecked){var e=new Image;n.bind(e,"load",this),n.bind(e,"error",this),e.src=this.src,this.isChecked=!0}},c.prototype.handleEvent=function(e){var t="on"+e.type;this[t]&&this[t](e)},c.prototype.onload=function(e){this.confirm(!0,"onload"),this.unbindProxyEvents(e)},c.prototype.onerror=function(e){this.confirm(!1,"onerror"),this.unbindProxyEvents(e)},c.prototype.confirm=function(e,t){this.isConfirmed=!0,this.isLoaded=e,this.emit("confirm",this,t)},c.prototype.unbindProxyEvents=function(e){n.unbind(e.target,"load",this),n.unbind(e.target,"error",this)},s});
+
+(function() {
+  var supportsCanvas = document.createElement('canvas');
+  supportsCanvas = !!(supportsCanvas.getContext && supportsCanvas.getContext('2d'));
+
+  // helper functions
+  function is_touch_device() {
+    return 'ontouchstart' in window || // works on most browsers
+           'onmsgesturechange' in window; // works on ie10
+  }
+
+  function fill(value, target, container) {
+    if (value + target < container)
+      value = container - target;
+    return value > 0 ? 0 : value;
+  }
+
+  function uri2blob(dataURI) {
+      var uriComponents = dataURI.split(',');
+      var byteString = atob(uriComponents[1]);
+      var mimeString = uriComponents[0].split(':')[1].split(';')[0];
+      var ab = new ArrayBuffer(byteString.length);
+      var ia = new Uint8Array(ab);
+      for (var i = 0; i < byteString.length; i++)
+          ia[i] = byteString.charCodeAt(i);
+      return new Blob([ab], { type: mimeString });
+  }
+
+  var pluginName = 'cropbox';
+
+  function factory($) {
+    function Crop($image, options, on_load) {
+      this.width = null;
+      this.height = null;
+      this.img_width = null;
+      this.img_height = null;
+      this.img_left = 0;
+      this.img_top = 0;
+      this.minPercent = null;
+      this.options = options;
+      this.$image = $image;
+      this.$image.hide().prop('draggable', false).addClass('cropImage').wrap('<div class="cropFrame" />'); // wrap image in frame;
+      this.$frame = this.$image.parent();
+	  this.on_load = on_load || function() {};
+      this.init();
+    }
+
+    Crop.prototype = {
+      init: function () {
+        var self = this;
+
+        var defaultControls = $('<div/>', { 'class' : 'cropControls' })
+              .append($('<span>'+this.options.label+'</span>'))
+              .append($('<button/>', { 'class' : 'cropZoomIn', 'type':'button' }).on('click', $.proxy(this.zoomIn, this)))
+              .append($('<button/>', { 'class' : 'cropZoomOut', 'type':'button' }).on('click', $.proxy(this.zoomOut, this)));
+
+        this.$frame.append(this.options.controls || defaultControls);
+        this.updateOptions();
+
+        if (typeof $.fn.hammer === 'function' || typeof Hammer !== 'undefined') {
+          var hammerit, dragData;
+          if (typeof $.fn.hammer === 'function')
+            hammerit = this.$image.hammer().data('hammer'); // Get the hammer instance after it has been created.
+          else
+            hammerit = Hammer(this.$image.get(0));
+		  // Enable panning in all directions without any threshold.
+		  hammerit.get('pan').set({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
+		  // Enable pinching.
+		  hammerit.get('pinch').set({ enable: true });
+          hammerit.on('panleft panright panup pandown', function(e) {
+            if (!dragData)
+              dragData = {
+                startX: self.img_left,
+                startY: self.img_top	// Some IE versions complained about the extra comma.
+              };
+            dragData.dx = e.deltaX;
+            dragData.dy = e.deltaY;
+            e.preventDefault();
+            self.drag.call(self, dragData, true);
+          }).on('panend pancancel', function(e) {
+            e.preventDefault();
+            dragData = null;
+            self.update.call(self);
+          }).on('doubletap', function(e) {
+            e.preventDefault();
+            self.zoomIn.call(self);
+          }).on('pinchin', function (e) {
+            e.preventDefault();
+            self.zoomOut.call(self);
+          }).on('pinchout', function (e) {
+            e.preventDefault();
+            self.zoomIn.call(self);
+          });
+        } else {
+          // prevent IE8's default drag functionality
+          this.$image.on("dragstart", function () { return false; });
+          this.$image.on('mousedown.' + pluginName, function(e1) {
+            var dragData = {
+              startX: self.img_left,
+              startY: self.img_top
+            };
+            e1.preventDefault();
+            $(document).on('mousemove.' + pluginName, function (e2) {
+              dragData.dx = e2.pageX - e1.pageX;
+              dragData.dy = e2.pageY - e1.pageY;
+              self.drag.call(self, dragData, true);
+            }).on('mouseup.' + pluginName, function() {
+              self.update.call(self);
+              $(document).off('mouseup.' + pluginName);
+              $(document).off('mousemove.' + pluginName);
+            });
+          });
+        }
+        if ($.fn.mousewheel) {
+          this.$image.on('mousewheel.' + pluginName, function (e) {
+            e.preventDefault();
+            if (e.deltaY < 0)
+              self.zoomIn.call(self);
+            else
+              self.zoomOut.call(self);
+          });
+        }
+      },
+
+      updateOptions: function () {
+        var self = this;
+        self.img_top = 0;
+        self.img_left = 0;
+        self.$image.css({width: '', left: self.img_left, top: self.img_top});
+        self.$frame.width(self.options.width).height(self.options.height);
+        self.$frame.off('.' + pluginName);
+        self.$frame.removeClass('hover');
+        if (self.options.showControls === 'always' || self.options.showControls === 'auto' && is_touch_device())
+          self.$frame.addClass('hover');
+        else if (self.options.showControls !== 'never') {
+          self.$frame.on('mouseenter.' + pluginName, function () { self.$frame.addClass('hover'); });
+          self.$frame.on('mouseleave.' + pluginName, function () { self.$frame.removeClass('hover'); });
+        }
+
+        // Image hack to get width and height on IE
+        var img = new Image();
+        img.onload = function () {
+          self.width = img.width;
+          self.height = img.height;
+          img.src = '';
+          img.onload = null;
+          self.percent = undefined;
+          self.fit.call(self);
+          if (self.options.result)
+            self.setCrop.call(self, self.options.result);
+          else
+            self.zoom.call(self, self.minPercent);
+          self.$image.fadeIn('fast');
+		  self.on_load.call(self);
+        };
+        // onload has to be set before src for IE8
+        // otherwise it never fires
+        img.src = self.$image.attr('src');
+      },
+
+      remove: function () {
+        var hammerit;
+        if (typeof $.fn.hammer === 'function')
+          hammerit = this.$image.data('hammer');	// Get hammer instance object.
+        else if (typeof Hammer !== 'undefined')
+          hammerit = Hammer(this.$image.get(0));
+        if (hammerit)
+          hammerit.off('panleft panright panup pandown panend pancancel doubletap pinchin pinchout');
+        this.$frame.off('.' + pluginName);
+        this.$image.off('.' + pluginName);
+        this.$image.css({width: '', left: '', top: ''});
+        this.$image.removeClass('cropImage');
+        this.$image.removeData(pluginName);
+        this.$image.insertAfter(this.$frame);
+        this.$frame.removeClass('cropFrame');
+        this.$frame.removeAttr('style');
+        this.$frame.empty();
+        this.$frame.remove();
+      },
+
+      fit: function () {
+        var widthRatio = this.options.width / this.width,
+          heightRatio = this.options.height / this.height;
+        this.minPercent = (widthRatio >= heightRatio) ? widthRatio : heightRatio;
+      },
+
+      setCrop: function (result) {
+        this.percent = Math.max(this.options.width/result.cropW, this.options.height/result.cropH);
+        this.img_width = Math.ceil(this.width*this.percent);
+        this.img_height = Math.ceil(this.height*this.percent);
+        this.img_left = -Math.floor(result.cropX*this.percent);
+        this.img_top = -Math.floor(result.cropY*this.percent);
+        this.$image.css({ width: this.img_width, left: this.img_left, top: this.img_top });
+        this.update();
+      },
+
+      zoom: function(percent) {
+        var old_percent = this.percent;
+
+        this.percent = Math.max(this.minPercent, Math.min(this.options.maxZoom, percent));
+        this.img_width = Math.ceil(this.width * this.percent);
+        this.img_height = Math.ceil(this.height * this.percent);
+
+        if (old_percent) {
+          var zoomFactor = this.percent / old_percent;
+          this.img_left = fill((1 - zoomFactor) * this.options.width / 2 + zoomFactor * this.img_left, this.img_width, this.options.width);
+          this.img_top = fill((1 - zoomFactor) * this.options.height / 2 + zoomFactor * this.img_top, this.img_height, this.options.height);
+        } else {
+          this.img_left = fill((this.options.width - this.img_width) / 2, this.img_width,  this.options.width);
+          this.img_top = fill((this.options.height - this.img_height) / 2, this.img_height, this.options.height);
+        }
+
+        this.$image.css({ width: this.img_width, left: this.img_left, top: this.img_top });
+        this.update();
+      },
+      zoomIn: function() {
+        this.zoom(this.percent + (1 - this.minPercent) / (this.options.zoom - 1 || 1));
+      },
+      zoomOut: function() {
+        this.zoom(this.percent - (1 - this.minPercent) / (this.options.zoom - 1 || 1));
+      },
+      drag: function(data, skipupdate) {
+        this.img_left = fill(data.startX + data.dx, this.img_width, this.options.width);
+        this.img_top = fill(data.startY + data.dy, this.img_height, this.options.height);
+        this.$image.css({ left: this.img_left, top: this.img_top });
+        if (!skipupdate)
+          this.update();
+      },
+      update: function() {
+        this.result = {
+          cropX: -Math.ceil(this.img_left / this.percent),
+          cropY: -Math.ceil(this.img_top / this.percent),
+          cropW: Math.floor(this.options.width / this.percent),
+          cropH: Math.floor(this.options.height / this.percent),
+          stretch: this.minPercent > 1
+        };
+
+        this.$image.trigger(pluginName, [this.result, this]);
+      },
+      getDataURL: function () {
+        if(!supportsCanvas) {
+          // return an empty string for browsers that don't support canvas.
+          // this allows it to fail gracefully.
+          return false;
+        }
+        var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+        canvas.width = this.options.width;
+        canvas.height = this.options.height;
+        ctx.drawImage(this.$image.get(0), this.result.cropX, this.result.cropY, this.result.cropW, this.result.cropH, 0, 0, this.options.width, this.options.height);
+        return canvas.toDataURL();
+      },
+      getBlob: function () {
+        return uri2blob(this.getDataURL());
+      }
+    };
+
+    $.fn[pluginName] = function(options, on_load) {
+      return this.each(function() {
+        var $this = $(this), inst = $this.data(pluginName);
+        if (!inst) {
+          var opts = $.extend({}, $.fn[pluginName].defaultOptions, options);
+          $this.data(pluginName, new Crop($this, opts, on_load));
+        } else if (options) {
+          $.extend(inst.options, options);
+          inst.updateOptions();
+        }
+      });
+    };
+
+    $.fn[pluginName].defaultOptions = {
+      width: 200,
+      height: 200,
+      zoom: 10,
+      maxZoom: 1,
+      controls: null,
+      showControls: 'auto',
+      label: 'Drag to crop'
+    };
+  }
+
+  if (typeof require === "function" && typeof exports === "object" && typeof module === "object")
+      factory(require("jquery"));
+  else if (typeof define === "function" && define.amd)
+      define(["jquery"], factory);
+  else
+      factory(window.jQuery || window.Zepto);
+
+})();
+
+
+!function($, document, XenForo, _undefined)
+{
+	XenForo.CoverBlock = function($container) {
+		// TODO AnyThing!
+        $(window).on('resize orientationchange', function()
+        {
+            $(document).triggerHandler('renderCoverComponents');
+        });
+
+        var width = $(window).width(), mainText, author, infoBlocks;
+        $(document).on('ready renderCoverComponents', function(e)
+        {
+            if (!mainText)
+            {
+                mainText = $('.primaryUserBlock .mainText');
+            }
+
+            if (!author)
+            {
+                author = $('.avatarScaler img[itemprop="photo"]');
+            }
+
+            if (! infoBlocks)
+            {
+                infoBlocks = $('.profilePage .section.infoBlock');
+            }
+
+            if ($(window).width() < 700)
+            {
+                mainText.children().each(function(nodeIndex, node) 
+                {
+                    var $node = $(node);
+                    if (!$node.hasClass('followBlock')) 
+                    {
+                        $node.xfShow();
+                    }
+                });
+
+                author.xfShow();
+
+                if (infoBlocks.length)
+                {
+                    $(infoBlocks[0]).css({ marginTop: 10 });
+                }
+
+                $container.find('.bottom').xfHide();
+            }
+            else
+            {
+                mainText.children().each(function(nodeIndex, node) 
+                {
+                    var $node = $(node);
+                    if (!$node.hasClass('followBlock')) 
+                    {
+                        $node.xfHide();
+                    }
+                });
+
+                author.xfHide();
+                if (infoBlocks.length)
+                {
+                    $(infoBlocks[0]).css({ marginTop: 0 });
+                }
+
+                $container.find('.bottom').xfShow();
+            }
+        });
+	};
+
+    XenForo.__crops = null;
+
+    XenForo.RepositionClickHandle = function($link) {
+        $(window).on('resize orientationchange', function(e)
+        {
+            $(document).triggerHandler('renderCoverComponents');
+        });
+
+        $link.on('click', function(e)
+        {
+            e.preventDefault();
+            
+            var $element = $(e.currentTarget),
+                $target = $($element.data('target')),
+                cropWindowHeight = parseInt($target.data('height')) || 350,
+                cropWindowWidth = parseInt($target.data('width')) || 1024;
+
+            var $ajaxProgress = $target.find('.InProgress'),
+                $anchor = $target.find('.ToggleTriggerAnchor'),
+                $menu = $target.find('#profileCover_actions');
+
+            $target.addClass('repositionCover');
+
+            $ajaxProgress.xfShow();
+
+            $anchor.xfHide();
+            $menu.xfHide();
+
+            $target.find('img.coverPhoto').attr('src', $target.data('source'));
+
+            var $image = $('.profileCover .inner>img');
+            $image.imagesLoaded(function(e)
+            {
+                if (e.isComplete)
+                {
+                    $(document).triggerHandler('coverImageLoaded');
+                    setTimeout(function()
+                    {
+                        initialCropbox();
+                    }, 100);
+                }
+            });
+
+            var initialCropbox = function()
+            {
+                $ajaxProgress.xfHide();
+
+                var $button = $('<a />').attr('class', 'repositionButtonSave button')
+                                        .attr('href', document.URL + '#')
+                                        .text($target.data('buttontitle'));
+                $target.append($button);
+
+                XenForo.activate($target);
+
+                var ratio;
+
+                if ($target.width() >= cropWindowWidth)
+                {
+                    ratio = 1;
+                }
+                else
+                {
+                    ratio = $target.width() / cropWindowWidth;
+                }
+                windowResizeHandle(ratio, $target.width(), $image);
+                
+                $(document).on('renderCoverComponents', function(e)
+                {
+                    var ratio;
+
+                    if ($target.width() >= cropWindowWidth)
+                    {
+                        ratio = 1;
+                    }
+                    else
+                    {
+                        ratio = $target.width() / cropWindowWidth;
+                    }
+                    windowResizeHandle(ratio, $target.width(), $image);
+                });
+            };
+
+            var windowResizeHandle = function(ratio, width, $image)
+            {
+                var height = ratio * cropWindowHeight;
+
+                $image.cropbox(
+                {
+                    width: width,
+                    height: height,
+                    showControls: 'never'
+                }).on('cropbox', function(event, data)
+                {
+                    XenForo.__crops = data;
+                    XenForo.__crops['containerW'] = $image.width();
+                });
+            };
+        });
+    };
+
+    XenForo.RepositionButtonSave = function($link) {
+        $link.on('click', function(e)
+        {
+            e.preventDefault();
+
+            $link.attr('disabled', 'disabled');
+
+            $container = $('.profileCover'),
+                postURL = $container.data('save'),
+                $InProgress = $container.find('.InProgress');
+
+            $InProgress.xfShow();
+            $container.removeClass('repositionCover');
+
+            if (!postURL || !XenForo.__crops)
+            {
+               return false;
+            }
+
+            XenForo.ajax(postURL, XenForo.__crops, function(ajaxData, textStatus)
+            {
+                XenForo.__crops = null;
+
+                $InProgress.xfHide();
+
+                if (XenForo.hasResponseError(ajaxData))
+                {
+                    return false;
+                }
+
+                $('.cropFrame').remove();
+
+                var $newImage = $('<img />').attr({ 'class' : 'coverPhoto photo', 'src': ajaxData.result.cover});
+                $newImage.insertAfter($('.profileCover .InProgress'));
+
+                $link.xfHide();
+                $link.remove();
+
+                $container.find('.ToggleTriggerAnchor').xfShow();
+                $container.find('#profileCover_actions').removeClass('menuVisible');
+
+                XenForo.activate($container);
+            });
+
+        });
+    };
+
+	XenForo.register('.profileCover', 'XenForo.CoverBlock');
+    XenForo.register('.repositionClickHandle', 'XenForo.RepositionClickHandle');
+    XenForo.register('.repositionButtonSave', 'XenForo.RepositionButtonSave');
+
+}(jQuery, document, XenForo);

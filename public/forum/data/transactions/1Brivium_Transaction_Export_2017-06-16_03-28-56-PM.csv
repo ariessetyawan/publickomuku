@@ -1,0 +1,2 @@
+"Transaction Id",Action,"Currency Id","User Id","User Name","User Action Id","User Action Name",Amount,Reverted,Status,"Transaction Date",Message
+13,Transfer,3,1,administrator,39,ariessetyawan,"Spent Rp 50,000.00 ",,Complete,"Jun 16, 2017 at 7:36 PM",

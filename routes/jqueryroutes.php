@@ -1,0 +1,22 @@
+<?php
+Route::get('ajaxreqsoal/{id}',['middleware' => 'ajax', 'uses' => 'Ajaxcontroller@JSONpertanyaan']);
+Route::get('ajaxlogin', ['middleware' => 'ajax', 'uses' => 'Newsfeed@halamanlogin']);
+Route::get('ajaxregister', ['middleware' => 'ajax', 'uses' => 'Newsfeed@halamanregister']);
+Route::get('ajaxtbnf', 'Newsfeed@halamantbnf');
+Route::get('ajaxkomenstatus/{id}', ['middleware' => 'ajax', 'uses' => 'Ajaxcontroller@halamankomenstatus']);
+Route::get('ajaxstatusfoto/{id}', ['middleware' => 'ajax', 'uses' => 'Newsfeed@halamanstatusfoto']);
+Route::get('ajaxkepalamenu', 'Newsfeed@halamankepalamenu');
+Route::get('ajaxkontenjualbelinf', 'Newsfeed@halamankontenjualbelinf');
+Route::get('ajaxkomunitasnf', 'Newsfeed@halamankomunitasnf');
+Route::get('ajaxkepalamenunode/{node}', 'Newsfeed@halamankepalamenunode');
+Route::get('ajaxkategoritop/{node}', 'Newsfeed@halamankategoritop');
+Route::get('ajaxhotthreadnf', 'Newsfeed@halamanhotthreadnf');
+Route::get('ajaxthreadnf', 'Ajaxcontroller@JSONthread');
+Route::get('ajaxsearch', 'Ajaxcontroller@JSONbetasearch');
+Route::get('ajaxstatusnf', 'Ajaxcontroller@JSONstatus');
+Route::get('ajaxhotusernf', 'Newsfeed@halamanhotusernf');
+Route::get('ajaxtopkategorinf', 'Newsfeed@halamantopkategorinf');
+Route::get('logoutsistem', 'Ajaxcontroller@logout');
+Route::post('komukuktdaftar','Ajaxcontroller@insertuser');
+Route::post('komukumlebulogin','Ajaxcontroller@loginuser');
+Route::post('usershaaphiere/{kondisi}','Ajaxcontroller@JSONCekInfoUser');

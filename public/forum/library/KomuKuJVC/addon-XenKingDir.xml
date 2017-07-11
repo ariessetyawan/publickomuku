@@ -1,0 +1,3984 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="KomuKuJVC" title="[SurreyForum] KomuKuJVC - Business / Links Directory" version_string="1.2.0.8" version_id="40" url="http://xenforo.com/community/threads/surreyforum-KomuKuJVC-link-business-directory-directory.20706" install_callback_class="KomuKuJVC_Install" install_callback_method="installCode" uninstall_callback_class="KomuKuJVC_Install" uninstall_callback_method="uninstallCode">
+  <admin_navigation>
+    <navigation navigation_id="linkDirectory" parent_navigation_id="applications" display_order="11" link="directory" admin_permission_id="node" debug_only="0" hide_no_children="0"/>
+    <navigation navigation_id="listDir" parent_navigation_id="linkDirectory" display_order="1" link="directory" admin_permission_id="" debug_only="0" hide_no_children="0"/>
+  </admin_navigation>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates>
+    <template title="option_list_option_multi_KomuKuJVC"><![CDATA[<xen:selectunit label="{$preparedOption.title}" name="{$fieldPrefix}[{$preparedOption.option_id}]" value="{xen:raw $preparedOption.option_value}"
+hint="{$preparedOption.hint}" size="10" multiple="true">
+	<xen:options source="$formatParams" />
+	<xen:explain>{xen:raw $preparedOption.explain}</xen:explain>
+	<xen:html>
+		<input type="hidden" name="{$listedFieldName}" value="{$preparedOption.option_id}" />
+		{xen:raw $editLink}
+	</xen:html>
+</xen:selectunit>]]></template>
+    <template title="sfdirectory_node_add"><![CDATA[<xen:title><xen:if is="{$parentNode}">{xen:phrase create_child_node_of_x, 'title={$parentNode.title}'}<xen:else />Create Directory Node</xen:if></xen:title>
+<xen:h1><xen:if is="{$parentNode}">{xen:phrase create_child_node_of_x, 'title=<a href="{xen:adminlink directory/edit, $parentNode}">{$parentNode.title}</a>'}<xen:else />Create Directory Node</xen:if></xen:h1>
+
+<xen:form action="{xen:adminlink 'directory/insert'}">
+
+	<xen:radiounit name="node_type_id" label="{xen:phrase node_type}:" hint="{xen:phrase what_kind_of_node_do_you_want_to_add}">
+		<xen:options source="$nodeTypeOptions" />
+	</xen:radiounit>
+
+	<input type="hidden" name="parent_node_id" value="{$parent_node_id}" />
+
+	<xen:submitunit save="{xen:phrase proceed}..." />
+
+</xen:form>]]></template>
+    <template title="sfdirectory_node_list"><![CDATA[<xen:title>Directory Tree</xen:title>
+
+<xen:topctrl>
+
+	<form style="float:right; width:auto; margin:0;" class="xenForm AutoValidator" method="post" action="{xen:adminlink 'directory/CountRebuild'}" data-redirect="off">
+		<input type="hidden" value="39" name="pinthreadid">		
+		<input type="submit" value="{xen:phrase rebuild_counts}" accesskey="r" class="button primary">
+	</form>
+
+	<a href="{xen:adminlink 'directory/add'}" class="button" accesskey="a">+ {xen:phrase create_new_node}</a>
+</xen:topctrl>
+
+<xen:require css="filter_list.css" />
+<xen:require js="js/xenforo/filter_list.js" />
+
+<xen:form action="{xen:adminlink nodes}" class="section">
+	<xen:if is="{$nodes}">
+
+		<h2 class="subHeading">
+			<xen:include template="filter_list_controls" />
+			{xen:phrase nodes}
+		</h2>
+
+		<ol class="FilterList">
+			<xen:foreach loop="$nodes" value="$node">
+				<xen:listitem
+					id="{$node.node_id}"
+					label="{$node.title}"
+					snippet="{$node.node_type}"
+					href="{xen:adminlink 'directory/edit', $node}"
+					class="_depth{$node.depth}"
+					delete="{xen:adminlink 'directory/delete', $node}">
+
+					<xen:html>
+						<a href="{xen:adminlink 'directory/add', '', 'parent_node_id={$node.node_id}'}" class="secondaryContent">+ {xen:phrase child}</a>
+						<a href="{xen:adminlink 'directory/add', '', 'parent_node_id={$node.parent_node_id}'}" class="secondaryContent">+ {xen:phrase sibling}</a>
+					</xen:html>
+				</xen:listitem>
+			</xen:foreach>
+		</ol>
+
+		<p class="sectionFooter">{xen:phrase showing_x_of_y_items, 'count=<span class="FilterListCount">{xen:count $nodes}</span>', 'total={xen:count $nodes}'}</p>
+
+	<xen:else />
+
+		<div class="noResults">{xen:phrase there_no_nodes_defined}</div>
+
+	</xen:if>
+</xen:form>]]></template>
+    <template title="sfdir_delete"><![CDATA[<xen:title>{xen:phrase confirm_deletion_of_forum}: {$directory.title}</xen:title>
+<xen:h1>Confirm deletion of directory</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink 'directory/edit', $directory}">{$directory.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:require css="delete_confirmation.css" />
+
+<xen:form action="{xen:adminlink 'directory/delete'}" class="deleteConfirmForm formOverlay">
+	<p>{xen:phrase please_confirm_want_to_delete_forum_and_discussions}:</p>
+	<strong><a href="{xen:adminlink 'directory/edit', $directory}">{$directory.title}</a></strong>
+
+	<xen:include template="helper_node_delete_children" />
+
+	<input type="hidden" name="node_id" value="{$directory.node_id}" />
+	<input type="hidden" name="_xfConfirm" value="1" />
+
+	<xen:submitunit save="Delete Directory" />
+</xen:form>]]></template>
+    <template title="sfdir_edit"><![CDATA[<xen:title>{xen:if {$directory.node_id}, 'Edit Directory: {$directory.title}', 'Create New Directory'}</xen:title>
+
+<xen:if is="{$directory.node_id}">
+	<xen:navigation>
+		<xen:breadcrumb href="{xen:adminlink nodes}#{xen:helper listitemid, $directory.node_id}">Create Directory</xen:breadcrumb>
+	</xen:navigation>
+
+	<xen:topctrl>
+		<a href="{xen:adminlink 'directory/add', '', 'parent_node_id={$directory.node_id}'}" class="button">+ {xen:phrase add_child}</a>
+		<a href="{xen:adminlink 'directory/add', '', 'parent_node_id={$directory.parent_node_id}'}" class="button">+ {xen:phrase add_sibling}</a>
+	</xen:topctrl>
+</xen:if>
+
+<xen:form action="{xen:adminlink 'dirs/save', $directory}"
+	class="AutoValidator"
+	data-fieldValidatorUrl="{xen:adminlink 'dirs/validate-field', $directory}"
+	data-redirect="yes">
+
+	<fieldset>
+		<xen:textboxunit name="title" value="{$directory.title}" label="{xen:phrase title}:" data-liveTitleTemplate="{xen:if {$directory.node_id},
+			'Edit Directory: <em>%s</em>',
+			'Create New Directory: <em>%s</em>'}">
+		</xen:textboxunit>
+
+	</fieldset>
+	
+	<fieldset>
+		<xen:selectunit name="parent_node_id" value="{$directory.parent_node_id}" label="{xen:phrase parent_node}:">
+			<xen:options source="$nodeParentOptions" />
+		</xen:selectunit>
+		
+		<xen:textboxunit name="display_order" value="{$directory.display_order}" label="{xen:phrase display_order}:">
+			<xen:explain>{xen:phrase position_of_this_item_relative_to_other_nodes_with_same_parent}</xen:explain>
+		</xen:textboxunit>
+		
+
+	</fieldset>
+
+
+	<xen:submitunit save="{xen:phrase save_directory}">
+		<xen:if is="{$directory.node_id}"><a href="{xen:adminlink directory/delete, $directory}" class="button">{xen:phrase delete_directory}...</a></xen:if>
+	</xen:submitunit>
+
+	<input type="hidden" name="node_type_id" value="Directory" />
+
+</xen:form>]]></template>
+  </admin_templates>
+  <admin_template_modifications/>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="load_class_controller" execute_order="10" callback_class="KomuKuJVC_Listeners_ControllerPublic" callback_method="loadClassListener" active="1" hint="" description=""/>
+    <listener event_id="load_class_route_prefix" execute_order="10" callback_class="KomuKuJVC_Listeners_Threads" callback_method="loadClassRoutePrefix" active="1" hint="" description=""/>
+    <listener event_id="navigation_tabs" execute_order="10" callback_class="KomuKuJVC_Listeners_Nav" callback_method="listen" active="1" hint="" description=""/>
+    <listener event_id="template_hook" execute_order="10" callback_class="KomuKuJVC_Listeners_TemplateHooks" callback_method="templateHook" active="1" hint="" description=""/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups>
+    <group group_id="KomuKuJVC" display_order="3" debug_only="0"/>
+    <option option_id="DisplayCommas" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="720"/>
+    </option>
+    <option option_id="DisplayDirectoryRSidebar" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="905"/>
+    </option>
+    <option option_id="DisplayDirectoryStatistics" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="993"/>
+    </option>
+    <option option_id="DisplayRecentBusinessListings" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="910"/>
+    </option>
+    <option option_id="DisplayRecentBusinessListingsOnForum" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="904"/>
+    </option>
+    <option option_id="DisplayRecentBusinessReviews" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="994"/>
+    </option>
+    <option option_id="DisplaySubDirectoryRSidebar" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="906"/>
+    </option>
+    <option option_id="allowClaimable" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="805"/>
+    </option>
+    <option option_id="allowContactLink" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="404"/>
+    </option>
+    <option option_id="allowDeepLinks" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="403"/>
+    </option>
+    <option option_id="allowDirIdxCatSideBar" edit_format="onoff" data_type="unsigned_integer" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="1010"/>
+    </option>
+    <option option_id="allowGoogleMap" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="401"/>
+    </option>
+    <option option_id="allowLocation" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="409"/>
+    </option>
+    <option option_id="allowLogo" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="403"/>
+    </option>
+    <option option_id="allowMainDirFilter" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="610"/>
+    </option>
+    <option option_id="allowSiteURL" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="407"/>
+    </option>
+    <option option_id="allowTelephone" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="405"/>
+    </option>
+    <option option_id="allowYoutube" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="403"/>
+    </option>
+    <option option_id="claimableAnonymous" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="820"/>
+    </option>
+    <option option_id="claimableContactLink" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="825"/>
+    </option>
+    <option option_id="customCategoryTitleA" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value>Geographical Area(s) Covered</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="202"/>
+    </option>
+    <option option_id="customCategoryTitleB" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="302"/>
+    </option>
+    <option option_id="customFieldA1" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value>Location(s) Covered</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="203"/>
+    </option>
+    <option option_id="customFieldA2" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="205"/>
+    </option>
+    <option option_id="customFieldA3" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="206"/>
+    </option>
+    <option option_id="customFieldA4" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="207"/>
+    </option>
+    <option option_id="customFieldB1" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="303"/>
+    </option>
+    <option option_id="customFieldB2" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="304"/>
+    </option>
+    <option option_id="customFieldB3" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="305"/>
+    </option>
+    <option option_id="customFieldB4" edit_format="textbox" data_type="string" can_backup="1">
+      <default_value></default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="306"/>
+    </option>
+    <option option_id="directoryForum" edit_format="callback" data_type="array" can_backup="1">
+      <default_value>a:1:{i:0;s:1:"0";}</default_value>
+      <edit_format_params>KomuKuJVC_Option_ForumSelector::renderOption</edit_format_params>
+      <sub_options>*</sub_options>
+      <relation group_id="KomuKuJVC" display_order="1"/>
+    </option>
+    <option option_id="displayCustomA" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="201"/>
+    </option>
+    <option option_id="displayCustomB" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="301"/>
+    </option>
+    <option option_id="displayPrefixPrompt" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="998"/>
+    </option>
+    <option option_id="displaySubFilterDropDown" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="997"/>
+    </option>
+    <option option_id="hideNav" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="102"/>
+    </option>
+    <option option_id="includeCurretPageInSubBread" edit_format="onoff" data_type="unsigned_integer" can_backup="1">
+      <default_value>0</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="1210"/>
+    </option>
+    <option option_id="numer_of_cols" edit_format="spinbox" data_type="positive_integer" can_backup="1">
+      <default_value>2</default_value>
+      <edit_format_params>min=1
+step=1
+max = 4</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="720"/>
+    </option>
+    <option option_id="recentBusinessListingLimit" edit_format="spinbox" data_type="positive_integer" can_backup="1">
+      <default_value>5</default_value>
+      <edit_format_params>min=1
+step=1
+max = 20</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="911"/>
+    </option>
+    <option option_id="recentReviewLimit" edit_format="spinbox" data_type="positive_integer" can_backup="1">
+      <default_value>5</default_value>
+      <edit_format_params>min=1
+step=1
+max = 20</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="995"/>
+    </option>
+    <option option_id="subCatOrder" edit_format="radio" data_type="string" can_backup="1">
+      <default_value>nodeOrder</default_value>
+      <edit_format_params>alphabetically=alphabetically
+nodeOrder=node order</edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="715"/>
+    </option>
+    <option option_id="subDirLisingCount" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="520"/>
+    </option>
+    <option option_id="subLisingCount" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="515"/>
+    </option>
+    <option option_id="topCountIncChild" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="513"/>
+    </option>
+    <option option_id="topLisingCount" edit_format="onoff" data_type="boolean" can_backup="1">
+      <default_value>1</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="KomuKuJVC" display_order="511"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups>
+      <permission_group permission_group_id="KomuKuJVC"/>
+    </permission_groups>
+    <permissions>
+      <permission permission_group_id="KomuKuJVC" permission_id="canClaimListing" permission_type="flag" default_value="unset" interface_group_id="KomuKuJVCUser" display_order="5"/>
+      <permission permission_group_id="KomuKuJVC" permission_id="canEditAnyListingDetails" permission_type="flag" default_value="unset" interface_group_id="KomuKuJVCMod" display_order="1"/>
+      <permission permission_group_id="KomuKuJVC" permission_id="canEditOwnListingDetails" permission_type="flag" default_value="unset" interface_group_id="KomuKuJVCUser" display_order="1"/>
+      <permission permission_group_id="KomuKuJVC" permission_id="canSetClaimable" permission_type="flag" default_value="unset" interface_group_id="KomuKuJVCMod" display_order="1"/>
+      <permission permission_group_id="KomuKuJVC" permission_id="canSubmitListing" permission_type="flag" default_value="unset" interface_group_id="KomuKuJVCUser" display_order="4"/>
+      <permission permission_group_id="KomuKuJVC" permission_id="canViewDirectory" permission_type="flag" default_value="unset" interface_group_id="KomuKuJVCUser" display_order="1"/>
+      <permission permission_group_id="KomuKuJVC" permission_id="canViewReviews" permission_type="flag" default_value="unset" interface_group_id="KomuKuJVCUser" display_order="2"/>
+    </permissions>
+    <interface_groups>
+      <interface_group interface_group_id="KomuKuJVCMod" display_order="15335"/>
+      <interface_group interface_group_id="KomuKuJVCUser" display_order="15334"/>
+    </interface_groups>
+  </permissions>
+  <phrases>
+    <phrase title="address_line_1" version_id="1" version_string="1.0.1"><![CDATA[Address Line 1]]></phrase>
+    <phrase title="address_line_2" version_id="1" version_string="1.0.1"><![CDATA[Address Line 2]]></phrase>
+    <phrase title="add_a_website_logo" version_id="17" version_string="1.1.1"><![CDATA[Add a Website Logo]]></phrase>
+    <phrase title="add_a_youtube_movie" version_id="17" version_string="1.1.1"><![CDATA[Add a YouTube Video]]></phrase>
+    <phrase title="add_listing" version_id="1" version_string="1.0.1"><![CDATA[Add Listing]]></phrase>
+    <phrase title="add_modify_categories" version_id="17" version_string="1.1.1"><![CDATA[Add/Modify Categories]]></phrase>
+    <phrase title="add_modify_logo_url" version_id="17" version_string="1.1.1"><![CDATA[Add/Modify Logo URL]]></phrase>
+    <phrase title="add_modify_youtube_url" version_id="17" version_string="1.1.1"><![CDATA[Add/Modify YouTube URL]]></phrase>
+    <phrase title="admin_navigation_linkDirectory" version_id="1" version_string="1.0.1"><![CDATA[Link Directory]]></phrase>
+    <phrase title="admin_navigation_listDir" version_id="1" version_string="1.0.1"><![CDATA[Display Directory Tree]]></phrase>
+    <phrase title="anchor_text" version_id="1" version_string="1.0.1"><![CDATA[Anchor Text]]></phrase>
+    <phrase title="business_name" version_id="1" version_string="1.0.1"><![CDATA[Business Name]]></phrase>
+    <phrase title="can_claim_listing_no_perm" version_id="31" version_string="1.1.8.3"><![CDATA[You do not have the permission to claim the listing]]></phrase>
+    <phrase title="can_edit_listing_details_no_perm" version_id="31" version_string="1.1.8.3"><![CDATA[You do not have the permission to edit listing details ]]></phrase>
+    <phrase title="can_set_claimable_no_perm" version_id="31" version_string="1.1.8.3"><![CDATA[You do not have the permission to set a listing to claimable]]></phrase>
+    <phrase title="can_submit_listing_no_perm" version_id="31" version_string="1.1.8.3"><![CDATA[You do not have the permission to submit a listing]]></phrase>
+    <phrase title="can_view_directory_no_perm" version_id="31" version_string="1.1.8.3"><![CDATA[You do not have the permission to view the directory]]></phrase>
+    <phrase title="can_view_reviews_no_perm" version_id="31" version_string="1.1.8.3"><![CDATA[You do not have the permission to view reviews]]></phrase>
+    <phrase title="claim_listing" version_id="14" version_string="1.0.14"><![CDATA[Claim Listing]]></phrase>
+    <phrase title="contact_this_business" version_id="4" version_string="1.0.4"><![CDATA[Contact This Business]]></phrase>
+    <phrase title="create_listing" version_id="1" version_string="1.0.1"><![CDATA[Create Listing]]></phrase>
+    <phrase title="deeplink1_anchor_text" version_id="1" version_string="1.0.1"><![CDATA[Deep Link 1 Anchor Text]]></phrase>
+    <phrase title="deeplink1_url" version_id="1" version_string="1.0.1"><![CDATA[Deep Link 1 URL]]></phrase>
+    <phrase title="deeplink2_anchor_text" version_id="1" version_string="1.0.1"><![CDATA[Deep Link 2 Anchor Text]]></phrase>
+    <phrase title="deeplink2_url" version_id="1" version_string="1.0.1"><![CDATA[Deep Link 2 URL]]></phrase>
+    <phrase title="deeplink3_anchor_text" version_id="1" version_string="1.0.1"><![CDATA[Deep Link 3 Anchor Text]]></phrase>
+    <phrase title="deeplink3_url" version_id="1" version_string="1.0.1"><![CDATA[Deep Link 3 URL]]></phrase>
+    <phrase title="delete_directory" version_id="11" version_string="1.0.11"><![CDATA[Delete Directory]]></phrase>
+    <phrase title="directory" version_id="11" version_string="1.0.11"><![CDATA[Directory]]></phrase>
+    <phrase title="directory_home" version_id="5" version_string="1.0.5"><![CDATA[Directory Home]]></phrase>
+    <phrase title="directory_listing" version_id="1" version_string="1.0.1"><![CDATA[Directory Listing]]></phrase>
+    <phrase title="directory_of" version_id="5" version_string="1.0.5"><![CDATA[Directory of]]></phrase>
+    <phrase title="dir_categories" version_id="27" version_string="1.1.7.4"><![CDATA[CATEGORIES]]></phrase>
+    <phrase title="edit_listing_details" version_id="8" version_string="1.0.8"><![CDATA[Edit Listing Details
+]]></phrase>
+    <phrase title="filter_by_prefix" version_id="27" version_string="1.1.7.4"><![CDATA[Filter By Prefix:]]></phrase>
+    <phrase title="filter_directory" version_id="10" version_string="1.0.10"><![CDATA[Filter Directory]]></phrase>
+    <phrase title="listing_tools" version_id="17" version_string="1.1.1"><![CDATA[Listing Tools]]></phrase>
+    <phrase title="logo_image_url" version_id="4" version_string="1.0.4"><![CDATA[Logo Image URL]]></phrase>
+    <phrase title="log_in_to_add_listing" version_id="1" version_string="1.0.1"><![CDATA[Log in to Add Listing]]></phrase>
+    <phrase title="log_in_to_claim" version_id="14" version_string="1.0.14"><![CDATA[Log in to Claim]]></phrase>
+    <phrase title="make_this_claimable" version_id="19" version_string="1.1.3"><![CDATA[Make This Claimable]]></phrase>
+    <phrase title="modify_logo_url" version_id="17" version_string="1.1.1"><![CDATA[Modify Logo URL]]></phrase>
+    <phrase title="modify_youtube_url" version_id="21" version_string="1.1.5"><![CDATA[Modify YouTube URL]]></phrase>
+    <phrase title="new_listings" version_id="5" version_string="1.0.5"><![CDATA[New Listings]]></phrase>
+    <phrase title="node_type_Directory" version_id="4" version_string="1.0.4"><![CDATA[Directory]]></phrase>
+    <phrase title="option_allowClaimable" version_id="14" version_string="1.0.14"><![CDATA[Allow Listings to be claimable]]></phrase>
+    <phrase title="option_allowClaimable_explain" version_id="14" version_string="1.0.14"><![CDATA[This option allows users to set the listing to claimable]]></phrase>
+    <phrase title="option_allowContactLink" version_id="5" version_string="1.0.5"><![CDATA[Allow Contact Link]]></phrase>
+    <phrase title="option_allowContactLink_explain" version_id="5" version_string="1.0.5"><![CDATA[Allow contact link on the review page]]></phrase>
+    <phrase title="option_allowDeepLinks" version_id="5" version_string="1.0.5"><![CDATA[Allow Deep Links]]></phrase>
+    <phrase title="option_allowDeepLinks_explain" version_id="5" version_string="1.0.5"><![CDATA[Allow deep links on the review page]]></phrase>
+    <phrase title="option_allowDirIdxCatSideBar" version_id="34" version_string="1.2.0.2"><![CDATA[Display the Category List On Directory Index]]></phrase>
+    <phrase title="option_allowDirIdxCatSideBar_explain" version_id="34" version_string="1.2.0.2"><![CDATA[Display a list of categories on the Left hands side of the directory index page]]></phrase>
+    <phrase title="option_allowGoogleMap" version_id="5" version_string="1.0.5"><![CDATA[Allow Google Map]]></phrase>
+    <phrase title="option_allowGoogleMap_explain" version_id="5" version_string="1.0.5"><![CDATA[Allow Google map on the review page if an address is available]]></phrase>
+    <phrase title="option_allowLocation" version_id="5" version_string="1.0.5"><![CDATA[Allow Location]]></phrase>
+    <phrase title="option_allowLocation_explain" version_id="5" version_string="1.0.5"><![CDATA[Allow location on the review page]]></phrase>
+    <phrase title="option_allowLogo" version_id="5" version_string="1.0.5"><![CDATA[Allow Logo]]></phrase>
+    <phrase title="option_allowLogo_explain" version_id="5" version_string="1.0.5"><![CDATA[Allow logo image on the review page]]></phrase>
+    <phrase title="option_allowMainDirFilter" version_id="11" version_string="1.0.11"><![CDATA[Display Directory Filter]]></phrase>
+    <phrase title="option_allowMainDirFilter_explain" version_id="11" version_string="1.0.11"><![CDATA[Allow the main directroy page to display a filter]]></phrase>
+    <phrase title="option_allowSiteURL" version_id="5" version_string="1.0.5"><![CDATA[Allow Site URL]]></phrase>
+    <phrase title="option_allowSiteURL_explain" version_id="5" version_string="1.0.5"><![CDATA[Allow the Site URL to be displayed on the review page]]></phrase>
+    <phrase title="option_allowTelephone" version_id="5" version_string="1.0.5"><![CDATA[Allow Telephone Number]]></phrase>
+    <phrase title="option_allowTelephone_explain" version_id="5" version_string="1.0.5"><![CDATA[Allow Telelphone number on the review page]]></phrase>
+    <phrase title="option_allowYoutube" version_id="5" version_string="1.0.5"><![CDATA[Allow YouTube]]></phrase>
+    <phrase title="option_allowYoutube_explain" version_id="5" version_string="1.0.5"><![CDATA[Allow YouTube video on the review page]]></phrase>
+    <phrase title="option_claimableAnonymous" version_id="14" version_string="1.0.14"><![CDATA[Set Claimable Listings to Anonymous]]></phrase>
+    <phrase title="option_claimableAnonymous_explain" version_id="14" version_string="1.0.14"><![CDATA[If a listing is set to claimable, the 1st post will not show the thread owners avatar]]></phrase>
+    <phrase title="option_claimableContactLink" version_id="15" version_string="1.0.15"><![CDATA[Display contact link on  Claimable Listings]]></phrase>
+    <phrase title="option_claimableContactLink_explain" version_id="15" version_string="1.0.15"><![CDATA[]]></phrase>
+    <phrase title="option_customCategoryTitleA" version_id="8" version_string="1.0.8"><![CDATA[Custom Category Title A]]></phrase>
+    <phrase title="option_customCategoryTitleA_explain" version_id="8" version_string="1.0.8"><![CDATA[]]></phrase>
+    <phrase title="option_customCategoryTitleB" version_id="8" version_string="1.0.8"><![CDATA[Custom Category Title B]]></phrase>
+    <phrase title="option_customCategoryTitleB_explain" version_id="8" version_string="1.0.8"><![CDATA[]]></phrase>
+    <phrase title="option_customFieldA1" version_id="8" version_string="1.0.8"><![CDATA[Custom Field Name A1]]></phrase>
+    <phrase title="option_customFieldA1_explain" version_id="8" version_string="1.0.8"><![CDATA[]]></phrase>
+    <phrase title="option_customFieldA2" version_id="8" version_string="1.0.8"><![CDATA[Custom Field Name A2]]></phrase>
+    <phrase title="option_customFieldA2_explain" version_id="8" version_string="1.0.8"><![CDATA[]]></phrase>
+    <phrase title="option_customFieldA3" version_id="8" version_string="1.0.8"><![CDATA[Custom Field Name A3]]></phrase>
+    <phrase title="option_customFieldA3_explain" version_id="8" version_string="1.0.8"><![CDATA[]]></phrase>
+    <phrase title="option_customFieldA4" version_id="8" version_string="1.0.8"><![CDATA[Custom Field Name A4]]></phrase>
+    <phrase title="option_customFieldA4_explain" version_id="8" version_string="1.0.8"><![CDATA[]]></phrase>
+    <phrase title="option_customFieldB1" version_id="8" version_string="1.0.8"><![CDATA[Custom Field Name B1]]></phrase>
+    <phrase title="option_customFieldB1_explain" version_id="8" version_string="1.0.8"><![CDATA[]]></phrase>
+    <phrase title="option_customFieldB2" version_id="8" version_string="1.0.8"><![CDATA[Custom Field Name B2]]></phrase>
+    <phrase title="option_customFieldB2_explain" version_id="8" version_string="1.0.8"><![CDATA[]]></phrase>
+    <phrase title="option_customFieldB3" version_id="8" version_string="1.0.8"><![CDATA[Custom Field Name B3]]></phrase>
+    <phrase title="option_customFieldB3_explain" version_id="8" version_string="1.0.8"><![CDATA[]]></phrase>
+    <phrase title="option_customFieldB4" version_id="8" version_string="1.0.8"><![CDATA[Custom Field Name B4]]></phrase>
+    <phrase title="option_customFieldB4_explain" version_id="8" version_string="1.0.8"><![CDATA[]]></phrase>
+    <phrase title="option_directoryForum" version_id="1" version_string="1.0.1"><![CDATA[Directory Forum]]></phrase>
+    <phrase title="option_directoryForums" version_id="1" version_string="1.0.1"><![CDATA[Directory Forum]]></phrase>
+    <phrase title="option_directoryForums_explain" version_id="1" version_string="1.0.1"><![CDATA[Select ONE forum to act as your directory forum]]></phrase>
+    <phrase title="option_directoryForum_explain" version_id="1" version_string="1.0.1"><![CDATA[Select ONE forum to act as your directory forum]]></phrase>
+    <phrase title="option_DisplayCommas" version_id="24" version_string="1.1.7"><![CDATA[Display Commas]]></phrase>
+    <phrase title="option_DisplayCommas_explain" version_id="24" version_string="1.1.7"><![CDATA[Separate subcategories by commas on the directory main page]]></phrase>
+    <phrase title="option_displayCustomA" version_id="11" version_string="1.0.11"><![CDATA[Allow Custom Fields A]]></phrase>
+    <phrase title="option_displayCustomA_explain" version_id="8" version_string="1.0.8"><![CDATA[]]></phrase>
+    <phrase title="option_displayCustomB" version_id="11" version_string="1.0.11"><![CDATA[Allow Custom Fields B]]></phrase>
+    <phrase title="option_displayCustomB_explain" version_id="8" version_string="1.0.8"><![CDATA[]]></phrase>
+    <phrase title="option_DisplayDirectoryRSidebar" version_id="23" version_string="1.1.6.3"><![CDATA[Display Directory Sidebar]]></phrase>
+    <phrase title="option_DisplayDirectoryRSidebar_explain" version_id="23" version_string="1.1.6.3"><![CDATA[Display The Business Directory Sidebar (right) on the Directory Index page]]></phrase>
+    <phrase title="option_DisplayDirectoryStatistics" version_id="23" version_string="1.1.6.3"><![CDATA[Display Directory Stats On Directory Sidebar]]></phrase>
+    <phrase title="option_DisplayDirectoryStatistics_explain" version_id="23" version_string="1.1.6.3"><![CDATA[Display the Busniess Directory Statisitics on the directory sidebar (right)]]></phrase>
+    <phrase title="option_displayPrefixPrompt" version_id="28" version_string="1.1.8.0"><![CDATA[Display Prefix Prompt]]></phrase>
+    <phrase title="option_displayPrefixPrompt_explain" version_id="28" version_string="1.1.8.0"><![CDATA[When creating a directory listing, display an image to prompt the user to select a prefix (you will need to create your own image)]]></phrase>
+    <phrase title="option_DisplayRecentBusinessListings" version_id="25" version_string="1.1.7.2"><![CDATA[Display Recent Business Listings On Directory Sidebar]]></phrase>
+    <phrase title="option_DisplayRecentBusinessListingsOnForum" version_id="25" version_string="1.1.7.2"><![CDATA[Display New Listings On Main Forum Sidebar]]></phrase>
+    <phrase title="option_DisplayRecentBusinessListingsOnForum_explain" version_id="25" version_string="1.1.7.2"><![CDATA[Display the new Directory Listings on the Main Forum sidebar]]></phrase>
+    <phrase title="option_DisplayRecentBusinessListings_explain" version_id="25" version_string="1.1.7.2"><![CDATA[Display new Business Listings on the directory sidebar (right)]]></phrase>
+    <phrase title="option_DisplayRecentBusinessReviews" version_id="25" version_string="1.1.7.2"><![CDATA[Display Recent Reviews On Directory Sidebar]]></phrase>
+    <phrase title="option_DisplayRecentBusinessReviews_explain" version_id="25" version_string="1.1.7.2"><![CDATA[Display Recent Reviews on the directory sidebar (right)]]></phrase>
+    <phrase title="option_DisplaySubDirectoryRSidebar" version_id="23" version_string="1.1.6.3"><![CDATA[Display Sub Directory Sidebar]]></phrase>
+    <phrase title="option_DisplaySubDirectoryRSidebar_explain" version_id="23" version_string="1.1.6.3"><![CDATA[Display The Business Directory Sidebar (right) on the Sub-Directory page]]></phrase>
+    <phrase title="option_displaySubFilterDropDown" version_id="27" version_string="1.1.7.4"><![CDATA[Filter Drop Down]]></phrase>
+    <phrase title="option_displaySubFilterDropDown_explain" version_id="27" version_string="1.1.7.4"><![CDATA[Display a prefix filter drop down box]]></phrase>
+    <phrase title="option_group_KomuKuJVC" version_id="1" version_string="1.0.1"><![CDATA[[SurreyForum] KomuKuJVC]]></phrase>
+    <phrase title="option_group_KomuKuJVC_description" version_id="1" version_string="1.0.1"><![CDATA[Link Directory / Business Directory]]></phrase>
+    <phrase title="option_hideNav" version_id="5" version_string="1.0.5"><![CDATA[Hide Directory From Nav]]></phrase>
+    <phrase title="option_hideNav_explain" version_id="5" version_string="1.0.5"><![CDATA[Hide the Directory link from the Nav bar]]></phrase>
+    <phrase title="option_includeCurretPageInSubBread" version_id="34" version_string="1.2.0.2"><![CDATA[Include The Current Page In The Sub-Directory Breadcrumb]]></phrase>
+    <phrase title="option_includeCurretPageInSubBread_explain" version_id="34" version_string="1.2.0.2"><![CDATA[]]></phrase>
+    <phrase title="option_numer_of_cols" version_id="24" version_string="1.1.7"><![CDATA[Numer of Cols]]></phrase>
+    <phrase title="option_numer_of_cols_explain" version_id="24" version_string="1.1.7"><![CDATA[The number of columns to display in the directory index page]]></phrase>
+    <phrase title="option_recentBusinessListingLimit" version_id="25" version_string="1.1.7.2"><![CDATA[New Business Listing Limit]]></phrase>
+    <phrase title="option_recentBusinessListingLimit_explain" version_id="25" version_string="1.1.7.2"><![CDATA[Limit for the number of listings to display on the sidebar (right)]]></phrase>
+    <phrase title="option_recentReviewLimit" version_id="23" version_string="1.1.6.3"><![CDATA[Recent Review Limit]]></phrase>
+    <phrase title="option_recentReviewLimit_explain" version_id="25" version_string="1.1.7.2"><![CDATA[Limit for the number of Business Listing Reviews to display on the sidebar (right)]]></phrase>
+    <phrase title="option_subCatOrder" version_id="14" version_string="1.0.14"><![CDATA[Order Categories]]></phrase>
+    <phrase title="option_subCatOrder_explain" version_id="23" version_string="1.1.6.3"><![CDATA[Order of the categories on the main directoty page, sub directoty pages and left side bar]]></phrase>
+    <phrase title="option_subDirLisingCount" version_id="11" version_string="1.0.11"><![CDATA[Display Listing Count in Sub Directory Pages]]></phrase>
+    <phrase title="option_subDirLisingCount_explain" version_id="11" version_string="1.0.11"><![CDATA[Display the listing count for each of directories on the sub directory pages]]></phrase>
+    <phrase title="option_subLisingCount" version_id="11" version_string="1.0.11"><![CDATA[Display  Sub-Directory Listing Count]]></phrase>
+    <phrase title="option_subLisingCount_explain" version_id="11" version_string="1.0.11"><![CDATA[Display the listing count for each of the sub-directories on the Main directory page]]></phrase>
+    <phrase title="option_topCountIncChild" version_id="34" version_string="1.2.0.2"><![CDATA[Include Child Listing Count in Parent Directory Listing Count]]></phrase>
+    <phrase title="option_topCountIncChild_explain" version_id="34" version_string="1.2.0.2"><![CDATA[For the Top Level Directory Listing Count also include the child listings, this also applies to counts for subforums]]></phrase>
+    <phrase title="option_topLisingCount" version_id="12" version_string="1.0.12"><![CDATA[Display  Top Level Directory Listing Count]]></phrase>
+    <phrase title="option_topLisingCount_explain" version_id="12" version_string="1.0.12"><![CDATA[Display the listing count for top level catagories on the Main directory page]]></phrase>
+    <phrase title="permission_group_KomuKuJVC" version_id="31" version_string="1.1.8.3"><![CDATA[[SurreyForum] KomuKuJVC]]></phrase>
+    <phrase title="permission_interface_KomuKuJVCMod" version_id="31" version_string="1.1.8.3"><![CDATA[[SurreyForum] KomuKuJVC - Moderator Permissions]]></phrase>
+    <phrase title="permission_interface_KomuKuJVCUser" version_id="31" version_string="1.1.8.3"><![CDATA[[SurreyForum] KomuKuJVC - User Permissions]]></phrase>
+    <phrase title="permission_KomuKuJVC_canClaimListing" version_id="31" version_string="1.1.8.3"><![CDATA[Can Claim Listing]]></phrase>
+    <phrase title="permission_KomuKuJVC_canEditAnyListingDetails" version_id="31" version_string="1.1.8.3"><![CDATA[Can Edit Any Listing Details]]></phrase>
+    <phrase title="permission_KomuKuJVC_canEditOwnListingDetails" version_id="31" version_string="1.1.8.3"><![CDATA[Can Edit Own Listing Details]]></phrase>
+    <phrase title="permission_KomuKuJVC_canSetClaimable" version_id="31" version_string="1.1.8.3"><![CDATA[Can Set Claimable]]></phrase>
+    <phrase title="permission_KomuKuJVC_canSubmitListing" version_id="31" version_string="1.1.8.3"><![CDATA[Can Submit Listing]]></phrase>
+    <phrase title="permission_KomuKuJVC_canViewDirectory" version_id="31" version_string="1.1.8.3"><![CDATA[Can View Directory]]></phrase>
+    <phrase title="permission_KomuKuJVC_canViewReviews" version_id="31" version_string="1.1.8.3"><![CDATA[Can View Reviews]]></phrase>
+    <phrase title="postcode" version_id="1" version_string="1.0.1"><![CDATA[Postcode]]></phrase>
+    <phrase title="post_fix_directory_of" version_id="17" version_string="1.1.1"><![CDATA[]]></phrase>
+    <phrase title="proof_of_ownership" version_id="14" version_string="1.0.14"><![CDATA[Proof of Ownership]]></phrase>
+    <phrase title="rebuilding_counts" version_id="12" version_string="1.0.12"><![CDATA[Rebuilding Counts]]></phrase>
+    <phrase title="rebuild_counts" version_id="12" version_string="1.0.12"><![CDATA[Rebuild Counts]]></phrase>
+    <phrase title="save_directory" version_id="11" version_string="1.0.11"><![CDATA[Save Directory]]></phrase>
+    <phrase title="set_claimable" version_id="14" version_string="1.0.14"><![CDATA[Set Claimable]]></phrase>
+    <phrase title="set_listing_to_claimable" version_id="14" version_string="1.0.14"><![CDATA[Set Listing To Claimable ]]></phrase>
+    <phrase title="sfdir_2nd_category" version_id="30" version_string="1.1.8.2"><![CDATA[2nd Category]]></phrase>
+    <phrase title="sfdir_3rd_category" version_id="30" version_string="1.1.8.2"><![CDATA[3rd Category]]></phrase>
+    <phrase title="sfdir_4th_category" version_id="30" version_string="1.1.8.2"><![CDATA[4th Category]]></phrase>
+    <phrase title="sfdir_5th_category" version_id="30" version_string="1.1.8.2"><![CDATA[5th Category]]></phrase>
+    <phrase title="sfdir_active_links" version_id="23" version_string="1.1.6.3"><![CDATA[Active Links]]></phrase>
+    <phrase title="sfdir_add_a_relevant_youtube_video_example" version_id="30" version_string="1.1.8.2"><![CDATA[Add a relevant YouTube Video, example: www.youtube.com/watch?v=TswOLHUQFPk]]></phrase>
+    <phrase title="sfdir_add_relevant_media_a_site_logo_to_your_listing" version_id="30" version_string="1.1.8.2"><![CDATA[add relevant media / a site logo to your listing]]></phrase>
+    <phrase title="sfdir_are_you_sure_you_want_to_set_this_listing_to_claimable" version_id="30" version_string="1.1.8.2"><![CDATA[Are you sure you want to set this listing to Claimable?]]></phrase>
+    <phrase title="sfdir_bookmark_pages" version_id="30" version_string="1.1.8.2"><![CDATA[Bookmark Pages]]></phrase>
+    <phrase title="sfdir_categories" version_id="30" version_string="1.1.8.2"><![CDATA[CATEGORIES]]></phrase>
+    <phrase title="sfdir_categories_listed_under" version_id="30" version_string="1.1.8.2"><![CDATA[Categories Listed Under]]></phrase>
+    <phrase title="sfdir_claim_this_listing" version_id="30" version_string="1.1.8.2"><![CDATA[Claim This Listing]]></phrase>
+    <phrase title="sfdir_contact" version_id="30" version_string="1.1.8.2"><![CDATA[Contact]]></phrase>
+    <phrase title="sfdir_deep_links" version_id="30" version_string="1.1.8.2"><![CDATA[Deep Links]]></phrase>
+    <phrase title="sfdir_directory_category" version_id="30" version_string="1.1.8.2"><![CDATA[Directory Category]]></phrase>
+    <phrase title="sfdir_directory_statistics" version_id="23" version_string="1.1.6.3"><![CDATA[Business Directory Statistics]]></phrase>
+    <phrase title="sfdir_edit_details" version_id="30" version_string="1.1.8.2"><![CDATA[Edit Details]]></phrase>
+    <phrase title="sfdir_filter" version_id="30" version_string="1.1.8.2"><![CDATA[Filter]]></phrase>
+    <phrase title="sfdir_link" version_id="30" version_string="1.1.8.2"><![CDATA[Link]]></phrase>
+    <phrase title="sfdir_link_to_an_image_on_your_site" version_id="30" version_string="1.1.8.2"><![CDATA[Link to an image on your site, example: www.yoursite.com/logo.jpg]]></phrase>
+    <phrase title="sfdir_link_to_important_pages_of_your_site" version_id="30" version_string="1.1.8.2"><![CDATA[link to important pages of your site]]></phrase>
+    <phrase title="sfdir_location" version_id="30" version_string="1.1.8.2"><![CDATA[Location]]></phrase>
+    <phrase title="sfdir_main_category" version_id="30" version_string="1.1.8.2"><![CDATA[Main Category]]></phrase>
+    <phrase title="sfdir_make_sure_this_file_exists_on_your_site" version_id="30" version_string="1.1.8.2"><![CDATA[Make sure this file exists on your site and is approximately W:250px × H:200px]]></phrase>
+    <phrase title="sfdir_make_sure_you_link_to_the_actual_video_page" version_id="30" version_string="1.1.8.2"><![CDATA[Make sure you link to the actual video page (the link should contain: watch?v=....)]]></phrase>
+    <phrase title="sfdir_map_directions_for" version_id="30" version_string="1.1.8.2"><![CDATA[Map Directions For]]></phrase>
+    <phrase title="sfdir_mark_this_forum_read" version_id="38" version_string="1.2.0.6"><![CDATA[Mark this forum as read]]></phrase>
+    <phrase title="sfdir_new_business_listings" version_id="23" version_string="1.1.6.3"><![CDATA[New Business Listings]]></phrase>
+    <phrase title="sfdir_pending_links" version_id="23" version_string="1.1.6.3"><![CDATA[Pending Links]]></phrase>
+    <phrase title="sfdir_recent_reviews" version_id="23" version_string="1.1.6.3"><![CDATA[Recent Reviews]]></phrase>
+    <phrase title="sfdir_reviews_count" version_id="23" version_string="1.1.6.3"><![CDATA[Review Count]]></phrase>
+    <phrase title="sfdir_search_this_forum" version_id="38" version_string="1.2.0.6"><![CDATA[Search this forum]]></phrase>
+    <phrase title="sfdir_setting_this_listing_to_claimable_means" version_id="30" version_string="1.1.8.2"><![CDATA[Setting this listing to Claimable means other business owners may claim it!]]></phrase>
+    <phrase title="sfdir_set_listing_to_claimable" version_id="30" version_string="1.1.8.2"><![CDATA[Set Listing to Claimable]]></phrase>
+    <phrase title="sfdir_site_url" version_id="30" version_string="1.1.8.2"><![CDATA[Site URL]]></phrase>
+    <phrase title="sfdir_sub_categories" version_id="23" version_string="1.1.6.3"><![CDATA[Sub Categories]]></phrase>
+    <phrase title="sfdir_telephone" version_id="30" version_string="1.1.8.2"><![CDATA[Telephone]]></phrase>
+    <phrase title="sfdir_these_fields_are_optional_allowing_you_to" version_id="30" version_string="1.1.8.2"><![CDATA[These fields are optional, allowing you to]]></phrase>
+    <phrase title="sfdir_this_field_is_optional_allowing_you_to_add_a_site_logo" version_id="30" version_string="1.1.8.2"><![CDATA[This field is optional, allowing you to add a site logo]]></phrase>
+    <phrase title="sfdir_total_categories" version_id="23" version_string="1.1.6.3"><![CDATA[Total Categories]]></phrase>
+    <phrase title="sfdir_website_links" version_id="30" version_string="1.1.8.2"><![CDATA[Website Links]]></phrase>
+    <phrase title="submit_listing" version_id="5" version_string="1.0.5"><![CDATA[Submit Listing]]></phrase>
+    <phrase title="submit_new_listing" version_id="1" version_string="1.0.1"><![CDATA[Submit New Listing]]></phrase>
+    <phrase title="telephone" version_id="1" version_string="1.0.1"><![CDATA[Telephone]]></phrase>
+    <phrase title="town_city" version_id="1" version_string="1.0.1"><![CDATA[Town / City]]></phrase>
+    <phrase title="unset_claimable" version_id="14" version_string="1.0.14"><![CDATA[Unset Claimable]]></phrase>
+    <phrase title="update_listing" version_id="1" version_string="1.0.1"><![CDATA[Update Listing]]></phrase>
+    <phrase title="view_larger_map_directions" version_id="8" version_string="1.0.8"><![CDATA[View Larger Map Directions ]]></phrase>
+    <phrase title="website_anchor_text" version_id="1" version_string="1.0.1"><![CDATA[Website Anchor Text]]></phrase>
+    <phrase title="website_url" version_id="1" version_string="1.0.1"><![CDATA[Website URL]]></phrase>
+    <phrase title="youtube_url" version_id="4" version_string="1.0.4"><![CDATA[Youtube URL]]></phrase>
+  </phrases>
+  <route_prefixes>
+    <route_type type="admin">
+      <prefix original_prefix="directory" class="KomuKuJVC_Route_PrefixAdmin_Directory" build_link="data_only"/>
+      <prefix original_prefix="dirs" class="KomuKuJVC_Route_PrefixAdmin_Dirs" build_link="data_only"/>
+    </route_type>
+    <route_type type="public">
+      <prefix original_prefix="directory" class="KomuKuJVC_Route_Prefix_Directory" build_link="data_only"/>
+      <prefix original_prefix="reviewposts" class="KomuKuJVC_Route_Prefix_ReviewPosts" build_link="data_only"/>
+      <prefix original_prefix="reviews" class="KomuKuJVC_Route_Prefix_Reviews" build_link="data_only"/>
+    </route_type>
+  </route_prefixes>
+  <style_properties/>
+  <templates>
+    <template title="sfcreate_listing" version_id="30" version_string="1.1.8.2"><![CDATA[<xen:title>{xen:phrase create_listing}</xen:title>
+<xen:navigation>
+	<xen:breadcrumb source="$nodeBreadCrumbs" />
+</xen:navigation>
+<xen:container var="$head.robots">
+	<meta name="robots" content="noindex" /></xen:container>
+
+<form action="{xen:link 'directory/AddListing', $forum}" method="post"
+	class="xenForm Preview AutoValidator"
+	data-previewUrl="{xen:link 'forums/create-thread/preview', $forum}"
+	data-redirect="on"
+>
+
+	<xen:if is="{$visitor.user_id} == 0">
+		<dl class="ctrlUnit">
+			<dt><label for="ctrl_guestUsername">{xen:phrase name}:</label></dt>
+			<dd><input type="text" name="_guestUsername" value="{$visitor.username}" class="textCtrl" /></dd>
+		</dl>
+	</xen:if>
+
+	<xen:include template="helper_captcha_unit" />
+
+
+
+
+
+
+
+
+	<fieldset>
+
+		<xen:include template="title_prefix_edit">
+			<xen:set var="$selectedPrefix">{$thread.prefix_id}</xen:set>
+			<xen:set var="$idSuffix">thread_create</xen:set>
+		</xen:include>
+	
+	<xen:if is="{$displayPrefixPrompt}">
+		<dl class="ctrlUnit fullWidth surplusLabel">
+			<dt></dt>
+			<dd><img style="margin-left: 30px;" src="data/images/SelectLocation.jpg"> </dd>
+		</dl>
+	</xen:if>
+		<dl class="ctrlUnit fullWidth surplusLabel">
+	
+			<dt><label for="ctrl_title_thread_create">{xen:phrase event}:</label></dt>
+			<dd><input type="text" name="title" class="textCtrl titleCtrl" id="ctrl_title_thread_create" value="{$input.event_title}" maxlength="100" 
+				placeholder="{xen:phrase business_name}..."
+				data-liveTitleTemplate="{xen:phrase create_thread}: <em>%s</em>"  />
+			</dd>
+		</dl>
+
+		<dl class="ctrlUnit fullWidth">
+			<dt></dt>
+			<dd>{xen:raw $editorTemplate}</dd>
+		</dl>
+	</fieldset>
+
+
+
+	
+	<fieldset>	
+		<dl class="ctrlUnit">
+		<dt><label for="ctrl_directory_category">{xen:phrase sfdir_directory_category}:</label></dt>
+		<dd>
+
+<select id="ctrl_directory_category" class="textCtrl" name="directory_category">
+
+	<xen:foreach loop="$category_list" value="$category">
+		<option value="{$category.node_id}"
+
+		<xen:if is="{$category.node_id} == {$forum.node_id}">
+			selected="selected"
+		</xen:if>
+		>{$category.title}</option>
+
+		
+		<xen:if is="{$category.child_nodes}">
+			<xen:foreach loop="$category.child_nodes" value="$c_node">
+				<option value="{$c_node.node_id}" 
+				<xen:if is="{$c_node.node_id} == {$forum.node_id}">
+					selected="selected"
+				</xen:if>
+				> -- {$c_node.title}</option>		
+			
+			
+				<xen:if is="{$c_node.child_nodes}">
+					<xen:foreach loop="$c_node.child_nodes" value="$cc_node">
+						<option value="{$cc_node.node_id}" 
+						<xen:if is="{$cc_node.node_id} == {$forum.node_id}">
+							selected="selected"
+						</xen:if>
+						> ---- {$cc_node.title}</option>
+
+												
+						<xen:if is="{$cc_node.child_nodes}">
+							<xen:foreach loop="$cc_node.child_nodes" value="$ccc_node">
+								<option value="{$ccc_node.node_id}" 
+								<xen:if is="{$ccc_node.node_id} == {$forum.node_id}">
+									selected="selected"
+								</xen:if>
+								> ------ {$ccc_node.title}</option>		
+
+			
+								<xen:if is="{$ccc_node.child_nodes}">
+									<xen:foreach loop="$ccc_node.child_nodes" value="$cccc_node">
+										<option value="{$cccc_node.node_id}" 
+										<xen:if is="{$cccc_node.node_id} == {$forum.node_id}">
+											selected="selected"
+										</xen:if>
+										> -------- {$cccc_node.title}</option>	
+										
+												
+										<xen:if is="{$cccc_node.child_nodes}">
+											<xen:foreach loop="$cccc_node.child_nodes" value="$ccccc_node">
+												<option value="{$ccccc_node.node_id}" 
+												<xen:if is="{$ccccc_node.node_id} == {$forum.node_id}">
+													selected="selected"
+												</xen:if>
+												> ---------- {$ccccc_node.title}</option>	
+												
+																				
+											</xen:foreach>
+										</xen:if>														
+									</xen:foreach>
+								</xen:if>																							
+							</xen:foreach>
+						</xen:if>		
+					</xen:foreach>			
+				</xen:if>
+			</xen:foreach>
+		</xen:if>
+	</xen:foreach>
+</select>
+
+
+		</dd>
+		</dl>
+	</fieldset>	
+	
+
+
+
+	<fieldset>
+<dl class="ctrlUnit">
+
+<xen:if is="{$allowTelephone}">		
+<dt><label for="ctrl_telephone">{xen:phrase telephone}:</label></dt>
+<dd><input type="text" name="telephone" class="textCtrl" maxlength="34" /></dd>
+</xen:if>
+
+<xen:if is="{$allowLocation}">
+<dt><label for="ctrl_address_line_1">{xen:phrase address_line_1}:</label></dt>
+<dd><input type="text" name="address_line_1" class="textCtrl"  maxlength="34" /></dd>
+
+<dt><label for="ctrl_address_line_2">{xen:phrase address_line_2}:</label></dt>
+<dd><input type="text" name="address_line_2" class="textCtrl" maxlength="34" /></dd>
+
+<dt><label for="ctrl_town_city">{xen:phrase town_city}:</label></dt>
+<dd><input type="text" name="town_city" class="textCtrl" maxlength="34" /></dd>
+
+<dt><label for="ctrl_postcode">{xen:phrase postcode}:</label></dt>
+<dd><input type="text" name="postcode" class="textCtrl" maxlength="34" /></dd>
+</xen:if>
+
+</dl>
+
+</fieldset>
+<fieldset>
+<dl class="ctrlUnit">	
+<dt><label for="ctrl_website_url">{xen:phrase sfdir_website_links}:</label></dt>
+<dd>
+
+	<ul>
+		<li>
+			<div style="float: left; margin-right: 10px;">
+				<label for="ctrl_website_url">{xen:phrase website_url}:</label>
+				<input type="text" name="website_url"  style="display: block;width: 220px;" class="textCtrl" maxlength="120" />
+			</div>
+			<div style="float: left; margin-right: 10px;">	
+				<label for="ctrl_website_anchor_text">Title:</label>
+				<input type="text" name="website_anchor_text" style="display: block;width: 220px;" class="textCtrl" maxlength="34" />
+			</div>
+			
+					
+		</li>
+		
+
+	</ul>
+
+
+</fieldset>
+
+
+<fieldset>
+
+<xen:if is="{$allowDeepLinks}">
+<dl class="ctrlUnit">
+	<dt><label for="ctrl_website_url">{xen:phrase sfdir_bookmark_pages}:</label></dt>
+	<dd></dd>
+</dl>
+
+<dl class="ctrlUnit">
+	<dt></dt>
+	<dd>
+		<ul>
+			<li>
+			<p class="hint">{xen:phrase sfdir_these_fields_are_optional_allowing_you_to} {xen:phrase sfdir_link_to_important_pages_of_your_site}</p>
+				<div style="float: left; margin-right: 10px;">
+					<label for="ctrl_deeplink1_url">{xen:phrase deeplink1_url}:</label>
+					<input type="text" name="deeplink1_url"  style="display: block;width: 220px;" class="textCtrl" maxlength="190" />
+				</div>
+				<div style="float: left; margin-right: 10px;">							
+					<label for="ctrl_deeplink1_anchor_text">Title:</label>
+					<input type="text" name="deeplink1_anchor_text" style="display: block;width: 220px;" class="textCtrl" maxlength="34" />
+				</div>				
+			</li>
+				
+			<li>
+				<div style="float: left; margin-right: 10px;">	
+					<label for="ctrl_deeplink2_url">{xen:phrase deeplink2_url}:</label>
+					<input type="text" name="deeplink2_url"  style="display: block;width: 220px;" class="textCtrl" maxlength="190" />
+				</div>
+				<div style="float: left; margin-right: 10px;">							
+					<label for="ctrl_deeplink2_anchor_text">Title:</label>
+					<input type="text" name="deeplink2_anchor_text" style="display: block;width: 220px;" class="textCtrl"  maxlength="34" />
+				</div>				
+			</li>		
+		
+
+			<li>
+				<div style="float: left; margin-right: 10px;">			
+					<label for="ctrl_deeplink3_url">{xen:phrase deeplink3_url}:</label>
+					<input type="text" name="deeplink3_url"  style="display: block;width: 220px;" class="textCtrl" maxlength="190" />
+				</div>
+				<div style="float: left; margin-right: 10px;">							
+					<label for="ctrl_deeplink3_anchor_text">Title:</label>
+					<input type="text" name="deeplink3_anchor_text" style="display: block;width: 220px;" class="textCtrl" maxlength="34" />
+				</div>				
+			</li>							
+		</ul>
+	</dd>
+</dl>
+</xen:if>
+		<xen:hook name="thread_create_fields_main" params="{xen:array 'forum={$forum}'}" />
+
+
+	</fieldset>
+
+
+	<fieldset>
+
+		<dl class="ctrlUnit">
+
+		<xen:if is="{$allowLogo} || {$allowYoutube}">
+			<dt></dt>
+			<dd>
+				<ul>
+					<li>
+						<p class="hint">{xen:phrase sfdir_these_fields_are_optional_allowing_you_to} {xen:phrase sfdir_add_relevant_media_a_site_logo_to_your_listing}</p>
+					</li>
+				</ul>	
+			</dd>	
+		</xen:if>
+		
+		<xen:if is="{$allowLogo}">
+			<dt><label for="ctrl_logo_image_url">{xen:phrase logo_image_url}:</label></dt>
+			<dd>
+				<input type="text" name="logo_image_url" class="textCtrl"  maxlength="200"  />
+				<ul>
+					<li>
+						<p class="hint">{xen:phrase sfdir_link_to_an_image_on_your_site}</p>
+						<p class="hint">{xen:phrase sfdir_make_sure_this_file_exists_on_your_site}</p>
+						<br/>
+					</li>
+					
+				</ul>
+			</dd>
+
+		</xen:if>
+
+		<xen:if is="{$allowYoutube}">
+			<dt><label for="ctrl_youtube_url">{xen:phrase youtube_url}:</label></dt>
+			<dd>
+				<input type="text" name="youtube_url" class="textCtrl"  maxlength="200"  />
+				<ul>
+					<li>
+						<p class="hint">{xen:phrase sfdir_add_a_relevant_youtube_video_example}</p>
+						<p class="hint">{xen:phrase sfdir_make_sure_you_link_to_the_actual_video_page}</p>
+					</li>
+				</ul>
+			</dd>
+		</xen:if>
+		</dl>
+
+
+	</fieldset>
+
+	
+<xen:if is="{$displayCustomA}">	
+	<fieldset>
+
+		<dl class="ctrlUnit">
+
+		<xen:if is="{$customFieldA1}">
+			<dt><label for="ctrl_logo_image_url">{$customFieldA1}:</label></dt>
+			<dd><input type="text" name="customfielda1" class="textCtrl"  maxlength="200"  /></dd>
+		</xen:if>
+
+		<xen:if is="{$customFieldA2}">
+			<dt><label for="ctrl_logo_image_url">{$customFieldA2}:</label></dt>
+			<dd><input type="text" name="customfielda2" class="textCtrl"  maxlength="200"  /></dd>
+		</xen:if>
+		
+		<xen:if is="{$customFieldA3}">
+			<dt><label for="ctrl_logo_image_url">{$customFieldA3}:</label></dt>
+			<dd><input type="text" name="customfielda3" class="textCtrl"  maxlength="200"  /></dd>
+		</xen:if>
+		
+		<xen:if is="{$customFieldA4}">
+			<dt><label for="ctrl_logo_image_url">{$customFieldA4}:</label></dt>
+			<dd><input type="text" name="customfielda4" class="textCtrl"  maxlength="200"  /></dd>
+		</xen:if>
+		
+		</dl>
+
+
+	</fieldset>
+</xen:if>	
+	
+
+<xen:if is="{$displayCustomB}">	
+	<fieldset>
+
+		<dl class="ctrlUnit">
+
+		<xen:if is="{$customFieldB1}">
+			<dt><label for="ctrl_logo_image_url">{$customFieldB1}:</label></dt>
+			<dd><input type="text" name="customfieldb1" class="textCtrl"  maxlength="200"  /></dd>
+		</xen:if>
+
+		<xen:if is="{$customFieldB2}">
+			<dt><label for="ctrl_logo_image_url">{$customFieldB2}:</label></dt>
+			<dd><input type="text" name="customfieldb2" class="textCtrl"  maxlength="200"  /></dd>
+		</xen:if>
+		
+		<xen:if is="{$customFieldB3}">
+			<dt><label for="ctrl_logo_image_url">{$customFieldB3}:</label></dt>
+			<dd><input type="text" name="customfieldb3" class="textCtrl"  maxlength="200"  /></dd>
+		</xen:if>
+		
+		<xen:if is="{$customFieldB4}">
+			<dt><label for="ctrl_logo_image_url">{$customFieldB4}:</label></dt>
+			<dd><input type="text" name="customfieldb4" class="textCtrl"  maxlength="200"  /></dd>
+		</xen:if>
+		
+		</dl>
+
+
+	</fieldset>
+</xen:if>	
+	
+
+
+	<xen:if is="{$attachmentParams}">
+		<dl class="ctrlUnit AttachedFilesUnit">
+			<dt><label for="ctrl_uploader">{xen:phrase attached_files}:</label></dt>
+			<dd><xen:include template="attachment_editor" /></dd>
+		</dl>
+	</xen:if>
+	
+	<xen:if is="{$visitor.user_id}">
+		<fieldset>
+			<dl class="ctrlUnit">
+				<dt>{xen:phrase options}:</dt>
+				<dd><ul>
+					<li><xen:include template="helper_thread_watch_input" /></li>
+				</ul></dd>
+			</dl>
+	
+			<xen:include template="thread_fields_status" />
+		</fieldset>
+	</xen:if>
+
+	
+
+
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd>
+			<input type="submit" value="{xen:phrase add_listing}" class="button primary" />
+		</dd>
+	</dl>
+
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>
+
+<xen:comment><xen:include template="editor" /></xen:comment>
+
+<xen:include template="sfKomuKuJVC_Footer" />]]></template>
+    <template title="sfdirectory.css" version_id="34" version_string="1.2.0.2"><![CDATA[.subDirContent {
+	display: table-cell;
+	vertical-align: top;
+	margin: 0;
+	*margin-left: 150px;
+	zoom: 1;
+}
+
+.categoriesSideBar {
+    display: table-cell;
+    vertical-align: top;
+    width: 150px;
+}
+.categoriesSideBar .heading {
+    border-top-right-radius: 0;
+    margin: 10px 0 0;
+}
+.categoriesSideBar .primaryContent {
+    font-size: 11px;
+}
+.categoriesSideBar .secondaryContent {
+    font-weight: bold;
+}
+.categoriesSideBar a {
+    display: block;
+    padding: 5px 10px;
+}
+.categoriesSideBar a:hover {
+    background: url("styles/default/xenforo/gradients/category-23px-light.png") repeat-x scroll center top #C9E5CB;
+    color: #4A7B65;
+    text-decoration: none;
+}
+
+
+
+
+.filterdir{
+    -moz-border-bottom-colors: none;
+    -moz-border-image: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-radius: 10px 10px 0 0;
+    border-style: solid solid none;
+    border-color: {xen:property primaryLighter};
+    border-width: 1px 1px 0;
+    float: right;
+    margin: 0 7px 0 0;
+    padding: 5px 5px 0;
+    top: 1px;
+    width: 320px;
+}
+
+.listDetails {
+    display: block;
+    padding: 5px 10px;
+}
+
+.dir_item_float{
+    float:left;
+    margin:2px;
+}
+
+.dirBlock {
+    display: block;
+    margin-bottom: 25px;
+    float: left;
+}
+
+.subDirBlock {
+    text-align: center;
+    width: 33%;
+}
+
+.subDir{
+ margin-bottom: 10px;
+}
+
+.subDir .primaryContent {
+    font-size: 1.5em;
+    margin-top: -10px;
+   
+}
+
+#noResults{
+opacity: 0;
+color: white;
+}
+
+/* must remove irrelevant*/
+/* ---------------------------------------------------------------- */
+
+/* --- filter_list.css --- */
+
+	
+	.Touch .FilterList.Scrollable,
+	.Touch .FilterList .Scrollable
+	{
+		max-height: none;
+		overflow: visible;
+	}
+
+.FilterList .listItem
+{
+	overflow: hidden; zoom: 1;
+	line-height: 20px;
+	padding: 0;
+	vertical-align: bottom;
+}
+
+.FilterList .listItem em,
+.FilterList .listItem dfn
+{
+	font-style: normal;
+}
+
+.FilterList .listItem.Last h4
+{
+	background: #fff4e5 url('styles/default/xenforo/gradients/category-23px-light.png') repeat-x top;
+}
+
+.FilterList .listItem.Last em
+{
+	font-weight: bold;
+}
+
+
+
+	
+	.FilterList .secondaryContent.toggler
+	{
+		background: none;
+		border-left-color: #f0f7fc;
+	}
+	
+	.FilterList .textHeading
+	{
+		background: #f0f7fc url('styles/default/xenforo/gradients/category-23px-light.png') repeat-x top;
+				
+		padding: 5px;
+		
+		margin-bottom: 0;
+		margin-top: 0;
+		font-size: 11px;
+		color: #2b485c;
+		overflow: hidden; zoom: 1;
+		position: relative;
+	}
+	
+		.FilterList .textHeading .count
+		{
+			font-weight: normal;
+			color: rgb(100,100,100);
+		}
+		
+		.FilterList .textHeading .controls
+		{
+			position: absolute;
+			right: 5px;
+			bottom: 5px;
+			font-size: 10px;
+			font-weight: normal;			
+		}
+		
+		.FilterList .textHeading .checkAllColumn
+		{
+			position: absolute;
+			right: 31px;
+			bottom: 5px;
+			display: block;
+			padding: 0 10px;
+		}
+	
+	.FilterList .textHeading + ol h4 a
+	{
+		padding-left: 20px;
+	}
+	
+		.FilterList .textHeading + ol h4 label + a
+		{
+			padding-left: 5px; /* undo the previous if we have a label before the <a> */
+		}
+	
+
+	
+		.FilterList h4 a span.secondRow
+		{
+			font-size: 11px;
+			color: rgb(150,150,150);
+			line-height: 14px;
+			display: block;
+		}
+	
+
+	
+		.FilterList.secondRow .secondaryContent
+		{
+			height: 34px;
+		}
+		
+			.FilterList.secondRow label.secondaryContent
+			{
+				line-height: 34px;
+			}
+			
+			.FilterList.secondRow .secondaryContent .secondRow
+			{
+				font-size: 9px;
+				line-height: 14px;
+				display: block;
+				text-align: center;
+			}
+		
+	.FilterList .secondaryContent .textCtrl
+	{
+		margin: -2px 0;
+		padding: 2px 3px;
+		font-size: 12px;
+	}
+
+	.FilterList .delete
+	{
+		padding: 0px;
+		width: 30px;
+		height: 30px;
+	}
+	
+
+			
+		.FilterList .delete span
+		{
+			display: block;
+			background: transparent url('styles/default/xenforo/permissions/deny.png') no-repeat center center;
+			cursor: pointer;
+		
+			padding: 5px;
+			width: 20px;
+			height: 20px;
+			
+			overflow: hidden;
+			white-space: nowrap;
+			text-indent: -1000px;
+		}
+		
+			.FilterList.secondRow .delete span
+			{
+				height: 34px;
+			}
+		
+	.FilterList .Popup a
+	{
+		background-color: #f0f7fc;
+		border-left: 1px solid #d7edfc;
+	}
+
+	
+
+	.FilterList .item_custom h4 a
+	{
+		color: red;
+	}
+	
+	.FilterList .item_inherited h4 a
+	{
+		color: orange;
+	}
+	
+		.FilterList h4 a dfn
+		{
+			font-size: 11px;
+			color: rgb(200,200,200);
+		}
+
+	/* highlighted text */
+	.FilterList h4 strong
+	{
+		color: red;
+		text-decoration: underline;
+		font-weight: normal;
+	}
+	
+	.FilterList .Popup > a
+	{
+		font-size: 11px;
+	}
+	
+	.subHeading .FilterControls
+	{
+		float: right;
+		margin-top: -3px;
+	}
+	
+		.FilterControls .textCtrl
+		{
+			padding-top: 2px;
+			padding-bottom: 2px;
+			font-size: 11px;
+			height: 13px;
+		}
+		
+		.FilterControls .button
+		{
+			padding-top: 0;
+			padding-bottom: 0;
+			height: 19px;
+			line-height: 19px;
+			font-size: 11px;
+		}
+		
+	.FilterList + .sectionFooter
+	{
+		text-align: right;
+	}
+
+.FilterList .listNote
+{
+	text-align: center;
+	padding: 5px;
+	font-style: italic;
+}
+		
+/* filter list indenting */
+
+._depth0 em { padding-left: 0em; }
+._depth1 em { padding-left: 2em; }
+._depth2 em { padding-left: 4em; }
+._depth3 em { padding-left: 6em; }
+._depth4 em { padding-left: 8em; }
+._depth5 em { padding-left: 10em; }
+._depth6 em { padding-left: 12em; }
+._depth7 em { padding-left: 14em; }
+._depth8 em { padding-left: 16em; }
+._depth9 em { padding-left: 18em; }
+
+/* special case buttons */
+
+.FilterList .banCtrl,
+.FilterList .liftCtrl
+{
+	min-width: 70px;
+}
+
+
+
+
+/* label classes */
+
+.FilterList h4.disabled em,
+.FilterList .textHeading.disabled
+{
+	color: rgb(150,150,150);
+	text-decoration: line-through;
+}
+
+.FilterList h4.parentDisabled em
+{
+	color: rgb(150,150,150);
+}
+
+
+
+
+
+]]></template>
+    <template title="sfdirectory_index" version_id="34" version_string="1.2.0.2"><![CDATA[<xen:title>{xen:phrase directory}</xen:title>
+
+<xen:require css="account.css" />
+<xen:require css="sfdirectory.css" />
+<xen:require css="node_list.css" />
+
+<xen:if is="{$DisplayDirectoryRSidebar}">
+	<xen:sidebar>
+
+
+
+		<xen:if is="{$DisplayRecentBusinessListings}">
+			<xen:include template="sfdir_new_business_listings" />
+		</xen:if>
+		
+		
+		<xen:if is="{$DisplayDirectoryStatistics}">
+			<xen:if is="{$details}">	
+				<div class="section sfdirSidebar sfdirSidebarStats">
+					<div class="secondaryContent">
+						<h3>{xen:phrase sfdir_directory_statistics}</h3>
+						<div class="pairsJustified">
+							<dl><dt>{xen:phrase sfdir_active_links}</dt>
+								<dd>{xen:number $details.active_count}</dd></dl>
+							<dl><dt>{xen:phrase sfdir_pending_links}</dt>
+								<dd>{xen:number $details.non_active_count}</dd></dl>
+							<dl><dt>{xen:phrase sfdir_total_categories}</dt>
+								<dd>{xen:number $details.catagory_count}</dd></dl>
+							<dl><dt>{xen:phrase sfdir_sub_categories}</dt>
+								<dd>{xen:number $details.sub_catagory_count}</dd></dl>
+							<dl><dt>{xen:phrase sfdir_reviews_count}</dt>
+								<dd>{xen:number $details.review_count}</dd></dl>
+						</div>
+					</div>
+				</div>
+			</xen:if>
+		</xen:if>
+		
+		
+		<xen:if is="{$DisplayRecentBusinessReviews}">
+			<xen:if is="{$recentReviews}">
+				<div class="section sfdirSidebar sfdirSidebarReviews">
+					<div class="secondaryContent">
+						<h3>{xen:phrase sfdir_recent_reviews}</h3>				
+						<ol class="sfdirRecentReviewList">
+							<xen:foreach loop="$recentReviews" value="$recentReview">
+								<xen:include template="sfdir_recent_review" />
+							</xen:foreach>
+						</ol>
+					</div>
+				</div>
+			</xen:if>
+		</xen:if>
+		
+	</xen:sidebar>
+</xen:if>
+
+
+<xen:if is="{$allowMainDirFilter}">
+
+<script src="js/xenforo/filter_list.js"></script>
+</xen:if>
+
+<form>
+
+	<xen:if is="{$allowMainDirFilter}">
+		<div style="width:100%; display: table;">
+			<h2 class="subHeading filterdir" >
+				<div class="FilterControls">
+					<input name="filter" value="" placeholder="{xen:phrase filter_directory}" results="4" class="textCtrl" id="ctrl_filter" type="search">
+					<label class="prefixCtrl">
+						<input name="prefixmatch" value="1" type="checkbox">
+						{xen:phrase prefix_match}
+					</label>		
+					<input name="clearfilter" value="{xen:phrase clear}" title="{xen:phrase clear_filter_parameters}" class="button" type="button">
+				</div>
+			{xen:phrase sfdir_filter} 
+			</h2>
+		</div>	
+	</xen:if>
+
+	<div class="container">
+
+	<xen:if is="{$allowDirIdxCatSideBar}">
+		<div class="categoriesSideBar">
+			<ul>
+				<xen:hook name="dir_wrapper_sidebar">
+				<li class="section"><h4 class="heading">{xen:phrase sfdir_categories}</h4>
+					<!--<h4 class="subHeading">{xen:phrase alerts}</h4>-->
+					<ul>
+					<xen:hook name="dir_wrapper_sidebar_your_account">
+					<xen:foreach loop="$category_list" value="$category">
+						<li>
+							<a class="{xen:if "{$selectedKey} == 'alerts/latest'", 'secondaryContent', 'primaryContent'}"
+							href="{xen:link directory}{$category.url}">{$category.title} </a>
+						</li>
+					</xen:foreach>
+					</xen:hook>
+					</ul>
+				</li>
+				</xen:hook>
+			</ul>
+		</div>
+	</xen:if>
+		
+		<fieldset>
+		<ol id="forums" class="nodeList sectionMain section" style="display: table;margin: 0;padding:0;vertical-align: top;width: 100%;">	
+	
+			
+			<xen:foreach loop="$category_list" value="$category">
+				<xen:if is="{$category.new_row}"> <div style="display: table-row;"> </xen:if>
+					<div class="dirBlock" style="width:{xen:number $col_width}%;">
+	
+	
+						
+						<li style="padding: 5px;">
+							<div class="nodeInfo categoryNodeInfo categoryStrip">
+								<div class="categoryText">
+									<h3 class="nodeTitle">
+										<a href="{xen:link full:directory}{$category.url}">
+											{$category.title}
+										</a>	
+										<xen:if is="{$topLisingCount}">
+											<xen:if is="{$topCountIncChild}">
+												({$category.tot_count})
+											<xen:else />
+												({$category.discussion_count})
+											</xen:if>
+										</xen:if>									
+									</h3>
+								</div>
+							</div>
+						</li>			
+						
+						
+						
+						<ol class="FilterList" style="padding: 0 0 0 10px;">
+							<xen:foreach loop="$category.child_nodes" value="$child_node">
+								<li class="listItem item_default dir_item_float" id="_{$child_node.url}" >
+									<h4><a href="{xen:link full:directory}{$child_node.url}"><em>{$child_node.title}</em></a><span class="muted">
+									<xen:if is="{$subLisingCount}">
+										<xen:if is="{$topCountIncChild}">
+											({$child_node.tot_count})
+										<xen:else />
+											({$child_node.discussion_count})
+										</xen:if>
+									</xen:if>
+									</span><xen:if is="{$DisplayCommas}">,</xen:if></h4>
+								</li>
+							</xen:foreach>
+						</ol>
+					</div>
+				<xen:if is="{$category.end_row}"> </div> </xen:if>
+			</xen:foreach>
+			
+	
+		</ol>
+		</fieldset>
+	
+	
+	
+	</div>	
+</form>
+<xen:include template="sfKomuKuJVC_Footer" />
+
+]]></template>
+    <template title="sfdirectory_list" version_id="27" version_string="1.1.7.4"><![CDATA[<xen:require css="discussion_list.css" />
+<xen:require js="js/xenforo/discussion_list.js" />
+
+
+<form action="{xen:link inline-mod/thread/switch}" method="post"
+	class="DiscussionList InlineModForm"
+	data-cookieName="threads"
+	data-controls="#InlineModControls"
+	data-imodOptions="#ModerationSelect option">
+
+	
+
+	<ol class="discussionListItems">
+	<xen:if is="{$stickyThreads} OR {$threads}">
+		<xen:set var="$showLastPageNumbers">1</xen:set>
+		<xen:set var="$linkPrefix">1</xen:set>
+	
+		<xen:hook name="thread_list_stickies">
+		<xen:foreach loop="$stickyThreads" value="$thread">
+			<xen:include template="thread_list_item" />
+		</xen:foreach>
+		</xen:hook>
+		
+		<xen:include template="ad_thread_list_below_stickies" />
+		
+		<xen:hook name="thread_list_threads">
+		<xen:foreach loop="$threads" value="$thread">
+			<xen:include template="sfdirectory_list_item" />
+		</xen:foreach>
+		</xen:hook>
+		
+		<xen:edithint template="thread_list_item_edit" />
+	<xen:else />
+		<li class="primaryContent">{xen:phrase there_no_threads_to_display}</li>
+	</xen:if>
+	</ol>
+
+	<xen:if is="{$totalThreads} OR {$inlineModOptions}">
+		<div class="sectionFooter InlineMod SelectionCountContainer">
+
+			<xen:if is="{$totalThreads}"><span class="contentSummary">{xen:phrase showing_threads_x_to_y_of_z, 'start={xen:number $threadStartOffset}', 'end={xen:number $threadEndOffset}', 'total={xen:number $totalThreads}'}</span></xen:if>
+
+			<xen:if is="{$inlineModOptions}">
+				<xen:include template="inline_mod_controls_thread" />
+			</xen:if>
+		</div>
+	</xen:if>
+
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>
+
+<h3 id="DiscussionListOptionsHandle"><a href="#">{xen:phrase thread_display_options}</a></h3>
+
+<form action="{xen:link 'forums', $forum}" method="post" class="DiscussionListOptions secondaryContent">
+
+	<xen:hook name="dir_list_options">
+	<div class="controlGroup">
+		<label for="ctrl_order">{xen:phrase sort_threads_by}:</label>
+		<select name="order" id="ctrl_order" class="textCtrl">
+			<option value="last_post_date" {xen:selected "{$order} == 'last_post_date'"}>{xen:phrase last_message_time}</option>
+			<option value="post_date" {xen:selected "{$order} == 'post_date'"}>{xen:phrase thread_creation_time}</option>
+			<option value="title" {xen:selected "{$order} == 'title'"}>{xen:phrase title_alphabetical}</option>
+			<option value="reply_count" {xen:selected "{$order} == 'reply_count'"}>{xen:phrase number_of_replies}</option>
+			<option value="view_count" {xen:selected "{$order} == 'view_count'"}>{xen:phrase number_of_views}</option>
+			<option value="first_post_likes" {xen:selected "{$order} == 'first_post_likes'"}>{xen:phrase first_message_likes}</option>
+		</select>
+	</div>
+
+	<div class="controlGroup">
+		<label for="ctrl_direction">{xen:phrase order_threads_in}:</label>
+		<select name="direction" id="ctrl_direction" class="textCtrl">
+			<option value="desc" {xen:selected "{$orderDirection} == 'desc'"}>{xen:phrase descending_order}</option>
+			<option value="asc" {xen:selected "{$orderDirection} == 'asc'"}>{xen:phrase ascending_order}</option>
+		</select>
+	</div>
+
+	<div class="buttonGroup">
+		<input type="submit" class="button primary" value="{xen:phrase set_options}" />
+		<input type="reset" class="button" value="{xen:phrase cancel}" />
+	</div>
+	</xen:hook>
+
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>
+
+<xen:include template="preview_tooltip" />]]></template>
+    <template title="sfdirectory_list_item" version_id="37" version_string="1.2.0.5"><![CDATA[<xen:require css="discussion_list.css" />
+
+<xen:if is="{$thread.isDeleted}"><xen:include template="thread_list_item_deleted" /><xen:else />
+
+<li id="thread-{$thread.thread_id}" class="discussionListItem {$thread.discussion_state} {xen:if {$thread.sticky}, 'sticky'} {xen:if {$thread.isNew}, 'unread'}" 
+<xen:if is="({$thread.is_claimable} != 1) || ({$claimableAnonymous} == 0)">
+	data-author="{$thread.username}"
+</xen:if>
+>
+
+	<div class="listBlock posterAvatar">
+		<span class="avatarContainer">
+			<xen:if is="({$thread.is_claimable} == 1) && ({$claimableAnonymous} == 1)">
+				<a class="avatar Av1s" data-avatarhtml="true" href="">
+			 		<img width="48" height="48" alt="Anonymous" src="styles/default/xenforo/avatars/avatar_s.png">
+				</a>
+			<xen:else />
+				<xen:avatar user="$thread" size="s" img="true" />
+			</xen:if>
+
+			<xen:if is="{$thread.user_post_count}"><xen:avatar user="$visitor" size="s" img="true" class="miniMe" title="{xen:phrase you_have_posted_x_messages_in_this_thread, 'count={xen:number $thread.user_post_count}'}" /></xen:if>
+		</span>
+	</div>
+
+	<div class="listBlock main">
+
+		<div class="titleText">
+			<h3 class="title">
+				
+				<xen:if is="{$showSubscribeOptions}"><input type="checkbox" name="thread_ids[]" value="{$thread.thread_id}" /></xen:if>
+
+				<xen:if is="{$thread.prefix_id}">
+
+					<xen:if is="{$linkPrefix}">
+
+						<a href="{xen:link 'full:directory/{$sub_dir_url}/', '', 't={$thread.prefix_url}', 'prefix_id={$thread.prefix_id}'}" class="prefixLink"
+							title="{xen:phrase show_only_threads_prefixed_by_x, 'prefix={xen:helper threadPrefix, $thread, plain, ""}'}">{xen:helper threadPrefix, $thread, html, ''}</a>
+					<xen:else />
+
+
+						{xen:helper threadPrefix, $thread}
+					</xen:if>
+				</xen:if>
+
+				<a href="{xen:link full:reviews}{$thread.url}"
+					title="{xen:if '{$thread.isNew} AND {$thread.haveReadData}', {xen:phrase go_to_first_unread_message}}"
+					class="{xen:if $thread.hasPreview, PreviewTooltip}"
+					<xen:if is="({$thread.is_claimable} != 1) || ({$claimableAnonymous} == 0)"> 
+						data-previewUrl="{xen:if $thread.hasPreview, {xen:link threads/preview, $thread}}"
+					</xen:if>					
+					>{xen:helper wrap, $thread.title, 50}</a>
+			</h3>
+			<xen:if hascontent="true">
+				<div class="iconKey">
+				<xen:contentcheck>
+					<xen:if is="{$thread.isModerated}"><span class="moderated" title="{xen:phrase moderated}">{xen:phrase moderated}</span></xen:if>
+					<xen:if is="!{$thread.discussion_open}"><span class="locked" title="{xen:phrase locked}">{xen:phrase locked}</span></xen:if>
+					<xen:if is="{$thread.sticky}"><span class="sticky" title="{xen:phrase sticky}">{xen:phrase sticky}</span></xen:if>
+					<xen:if is="{$thread.isRedirect}"><span class="redirect" title="{xen:phrase redirect}">{xen:phrase redirect}</span></xen:if>
+				</xen:contentcheck>
+				</div>
+			</xen:if>
+
+			<div class="secondRow">
+				<div class="posterDate muted">
+					
+					<xen:datetime time="$thread.post_date" title="{xen:if {$visitor.user_id}, ''}" />
+
+					<xen:if is="{$showForumLink}">, <a href="{xen:link forums, $thread.forum}" class="forumLink">{$thread.forum.title}</a></xen:if>
+
+
+				</div>
+
+				<div class="controls faint">
+					<xen:if is="{$thread.canEditThread}"><a href="{xen:link 'threads/list-item-edit', $thread}" class="EditControl">{xen:phrase edit}</a></xen:if>
+					<xen:if is="{$showSubscribeOptions} AND {$thread.email_subscribe}">{xen:phrase email}</xen:if>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="listBlock stats pairsJustified" title="{xen:phrase members_who_liked_first_message}: {xen:if $thread.isRedirect, '&ndash;', {xen:number $thread.first_post_likes}}">
+		<dl class="major"><dt>{xen:phrase replies}:</dt> <dd>{xen:if $thread.isRedirect, '&ndash;', {xen:number $thread.reply_count}}</dd></dl>
+		<dl class="minor"><dt>{xen:phrase views}:</dt> <dd>{xen:if $thread.isRedirect, '&ndash;', {xen:number $thread.view_count}}</dd></dl>
+	</div>
+
+	<div class="listBlock lastPost">
+		<xen:if is="{$thread.isRedirect}">
+			<div class="lastPostInfo">{xen:phrase n_a}</div>
+		<xen:else />
+			<dl class="lastPostInfo">
+				<xen:if is="({$thread.is_claimable} == 1) && ({$claimableAnonymous} == 1)">
+					<dt>&lt;Anonymous&gt;</dt>
+					<dd class="muted"><xen:datetime time="$thread.lastPostInfo.post_date" /></dd>
+				<xen:else />
+					<dt><xen:username user="$thread.lastPostInfo" /></dt>
+					<dd class="muted"><xen:datetime time="$thread.lastPostInfo.post_date" /></dd>
+				</xen:if>			
+			</dl>
+		</xen:if>
+	</div>
+
+</li>
+
+</xen:if>]]></template>
+    <template title="sfdirectory_map_view" version_id="31" version_string="1.1.8.3"><![CDATA[<xen:require css="sfdirectory_map_view.css" />
+
+<div style="width: 100%;display: table;">
+	<div class="dirtblrow">
+		<div class="leftrvw">
+			<div class="dirtblspcr">
+				<div class="subHeading" style="overflow:hidden;">
+					{$thread.title}
+				</div>
+				<div class="secondaryContent" style="border: 0px none; width: 100%; display: table;">
+
+				
+					<xen:if is="{$directorylisting.website_url}">
+						<xen:if is="{$allowSiteURL}">
+							<div class="fullleft">
+								<span class="muted" style="font-size: 0.9em;">{xen:phrase sfdir_site_url}</span>
+ 								<div class="userin">{$directorylisting.website_url}</div>				
+							</div>
+						</xen:if>				
+						<div class="fullleft">
+							<span class="muted" style="font-size: 0.9em;">{xen:phrase sfdir_link}</span>
+							<div class="userin">
+								<a href="{$directorylisting.website_url}">
+								<xen:if is="{$directorylisting.website_anchor_text}">
+									{$directorylisting.website_anchor_text}
+								<xen:else />
+									{$directorylisting.website_url}
+								</xen:if>	
+								</a> 
+							</div>
+						</div>				
+					</xen:if>
+					
+
+					<div class="fullleft">
+						<div class="halfleft">
+							<xen:if is="{$allowContactLink}">
+								<xen:if is="( (({$is_claimable} == 1) && ({$claimableContactLink} ==1)) || ({$is_claimable} == 0) ) ">			
+									<span class="muted" style="font-size: 0.9em;">{xen:phrase sfdir_contact}</span>
+									<div class="userin">
+										<a href="{xen:link 'conversations/add', '', 'to={$thread.username}'}"  >
+											{xen:phrase contact_this_business}
+										</a>
+									</div>
+								</xen:if>				
+							</xen:if>
+						</div>	
+						<div class="halfleft">
+							<xen:if is="{$allowTelephone}">
+								<xen:if is="{$directorylisting.telephone}">
+									<span class="muted" style="font-size: 0.9em;">{xen:phrase sfdir_telephone}</span>
+									<div class="userin">{$directorylisting.telephone}</div>					
+								</xen:if>
+							</xen:if>
+						</div>
+					</div>
+					
+				
+					<div class="fullleft">
+						<div class="halfleft">
+							<xen:if is="{$allowDeepLinks}">
+								<xen:if is="{$directorylisting.deeplink1_url}">	
+									<span class="muted" style="font-size: 0.9em;">{xen:phrase sfdir_deep_links}</span><br />
+									<div class="userin"><a href="{$directorylisting.deeplink1_url}">{$directorylisting.deeplink1_anchor_text}</a></div>
+									<div class="userin"><a href="{$directorylisting.deeplink2_url}">{$directorylisting.deeplink2_anchor_text}</a></div>
+									<div class="userin"><a href="{$directorylisting.deeplink3_url}">{$directorylisting.deeplink3_anchor_text}</a></div>
+								</xen:if>
+							</xen:if>
+						</div>
+						<div class="halfleft">
+							<xen:if is="{$allowLocation}">	
+								<xen:if is="{$directorylisting.address_line_1} OR {$directorylisting.address_line_2} OR {$directorylisting.postcode} OR {$directorylisting.town_city}">
+									<span class="muted" style="font-size: 0.9em;">{xen:phrase sfdir_location}</span>	
+									<xen:if is="{$directorylisting.address_line_1}"><div class="userin">{$directorylisting.address_line_1}</div></xen:if>
+									<xen:if is="{$directorylisting.address_line_2}"><div class="userin">{$directorylisting.address_line_2}</div></xen:if>
+									<xen:if is="{$directorylisting.town_city}"><div class="userin">{$directorylisting.town_city}</div></xen:if>
+									<xen:if is="{$directorylisting.postcode}"><div class="userin">{$directorylisting.postcode}</div></xen:if>
+								</xen:if>
+							</xen:if>
+						</div>
+					</div>	
+
+
+					<xen:if is="{$displayCustomA}">	
+						<xen:if is="{$directorylisting.customfielda1} OR {$directorylisting.customfielda2} OR {$directorylisting.customfielda3} OR {$directorylisting.customfielda4}">
+							<div class="fullleft">
+								<span class="muted" style="font-size: 0.9em;">{$customCategoryTitleA}</span>
+								<xen:if is="{$directorylisting.customfielda1}"><div class="userin">{$directorylisting.customfielda1}</div></xen:if>
+								<xen:if is="{$directorylisting.customfielda2}"><div class="userin">{$directorylisting.customfielda2}</div></xen:if>
+								<xen:if is="{$directorylisting.customfielda3}"><div class="userin">{$directorylisting.customfielda3}</div></xen:if>
+								<xen:if is="{$directorylisting.customfielda4}"><div class="userin">{$directorylisting.customfielda4}</div></xen:if>
+							</div>					
+						</xen:if>
+					</xen:if>			
+
+								
+					<xen:if is="{$displayCustomB}">	
+						<xen:if is="{$directorylisting.customfieldb1} OR {$directorylisting.customfieldb2} OR {$directorylisting.customfieldb3} OR {$directorylisting.customfieldb4}">
+							<div class="fullleft">
+								<span class="muted" style="font-size: 0.9em;">{$customCategoryTitleB}</span>	
+								<xen:if is="{$directorylisting.customfieldb1}"><div class="userin">{$directorylisting.customfieldb1}</div></xen:if>
+								<xen:if is="{$directorylisting.customfieldb2}"><div class="userin">{$directorylisting.customfieldb2}</div></xen:if>
+								<xen:if is="{$directorylisting.customfieldb3}"><div class="userin">{$directorylisting.customfieldb3}</div></xen:if>
+								<xen:if is="{$directorylisting.customfieldb4}"><div class="userin">{$directorylisting.customfieldb4}</div></xen:if>	
+							</div>
+						</xen:if>
+					</xen:if>		
+
+					<xen:if is="{$canEditListingDetails}">
+						<div style="margin: 5px 23px 5px 5px;text-align: right;">
+							<a href="{xen:link 'full:reviews'}{$thread.url}/dir-update-dialogue" 
+								class="callToAction OverlayTrigger"
+								data-overlayOptions="{&quot;fixed&quot;:false}">
+								<span>{xen:phrase sfdir_edit_details}</span>
+							</a>
+						</div>	
+					</xen:if>
+					<span class="revspacer"> </span>
+				</div>
+			</div>
+		</div>
+	
+		<div class="centerrvw">
+  			<div class="dirtblspcr">
+				<xen:if is="{$directorylisting.address_line_1} OR {$directorylisting.address_line_2} OR {$directorylisting.postcode} OR {$directorylisting.town_city}">
+					<xen:if is="{$allowGoogleMap}"> 
+						<div class="reviewattach">
+							<span class="reviewimg">		
+								<iframe  frameborder="0" scrolling="no" marginheight="0" marginwidth="0"
+									width="100%" height="415px" src="http://maps.google.com/maps?q={$listingaddress}&output=embed">
+								</iframe>
+							</span>
+							<div style="margin-top: 5px;text-align: right;">
+								<a href="{xen:link reviews}{$thread.url}/map-directions/">
+									{xen:phrase view_larger_map_directions}
+								</a>
+							</div>
+						</div>	
+					</xen:if>
+				</xen:if>	
+			</div>	
+		</div>
+
+	
+		<div class="rightrvw">
+			<div class="dirtblspcr">
+				<xen:if is="{$allowYoutube}">	
+					<xen:if is="{$youtube}">
+						<div class="reviewattach">
+							<span class="reviewimg">
+								<iframe title="YouTube video player" class="youtube-player" type="text/html" 
+									width="100%" height="200px" src="http://www.youtube.com/embed/{$youtube}?wmode=opaque"
+									frameborder="0" allowFullScreen>
+								</iframe>
+							</span>
+							
+							<xen:if is="{$canEditListingDetails}">
+								<div style="margin: 5px 0 0 0;text-align: right;">
+									<a href="{xen:link 'full:reviews'}{$thread.url}/modify-youtube-dialogue" 
+										class="callToAction OverlayTrigger"
+										data-overlayOptions="{&quot;fixed&quot;:false}">
+										<span>{xen:phrase modify_youtube_url}</span>
+									</a>
+								</div>	
+							</xen:if>		
+							
+						</div>
+						
+					<xen:else />
+						<xen:if is="{$canEditListingDetails}">
+							<div class="reviewattach">
+								<span class="reviewimg">
+									<div style="margin: auto;text-align: center;height: 200px">
+										<a href="{xen:link 'full:reviews'}{$thread.url}/modify-youtube-dialogue" 
+											class="callToAction OverlayTrigger"
+											data-overlayOptions="{&quot;fixed&quot;:false}"
+											style = "margin-top: 85px;"
+											>
+											<span>{xen:phrase add_a_youtube_movie}</span>
+										</a>
+									</div>	
+								</span>
+							</div>
+						</xen:if>
+					</xen:if>
+					
+				</xen:if>
+				
+				<xen:if is="{$allowLogo}">				
+					<xen:if is="{$directorylisting.logo_image_url}">
+						<div class="reiewattachwrap">
+							<div class="reviewattach">
+								<span class="reviewimg">
+									<img src="{$directorylisting.logo_image_url}" width="100%" height="200px" />
+								</span>
+								
+									<xen:if is="{$canEditListingDetails}">
+										<div style="margin: 5px 0 0 0;text-align: right;">
+											<a href="{xen:link 'full:reviews'}{$thread.url}/modify-logo-dialogue" 
+												class="callToAction OverlayTrigger"
+												data-overlayOptions="{&quot;fixed&quot;:false}">
+												<span>{xen:phrase modify_logo_url}</span>
+											</a>
+										</div>	
+									</xen:if>						
+								
+								</div>
+							</div>
+										
+						<xen:else />
+							<xen:if is="{$canEditListingDetails}">
+								<div class="reviewattach">
+									<span class="reviewimg">
+										<div style="margin: auto;text-align: center;height: 200px">
+											<a href="{xen:link 'full:reviews'}{$thread.url}/modify-logo-dialogue" 
+												class="callToAction OverlayTrigger"
+												data-overlayOptions="{&quot;fixed&quot;:false}"
+												style = "margin-top: 85px;"
+												>
+												<span>{xen:phrase add_a_website_logo}</span>
+											</a>
+										</div>	
+									</span>
+								</div>
+							</xen:if>
+						</xen:if>
+	
+				</xen:if>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="dirtblrow">
+
+		<div class="leftrvw">
+			<div class="dirtblspcr">
+				<div class="reviewattach">
+					<xen:if is="{$showCategories} != 5">
+						<div class="reviewimg" style="border: 0px none;">
+							<div class="fullleft">
+								<span class="muted" style="font-size: 0.9em;">{xen:phrase sfdir_categories_listed_under}</span>
+
+														
+								<xen:foreach loop="$categories" value="$cat">
+								<xen:if is="{$cat.title}">
+									<div class="userin">
+										<a href="{xen:link 'full:directory'}{$cat.url}"> 
+											{$cat.title} {xen:phrase post_fix_directory_of}
+										</a>
+									</div>	
+								</xen:if>			
+								</xen:foreach>
+											
+
+								<xen:if is="{$canEditListingDetails}">
+									<div style="margin: 5px 0;text-align: right;">
+										<a href="{xen:link 'full:reviews'}{$thread.url}/modify-categories-dialogue" 
+											class="callToAction OverlayTrigger"
+											data-overlayOptions="{&quot;fixed&quot;:false}">
+											<span>{xen:phrase add_modify_categories}</span>
+										</a>
+									</div>	
+								</xen:if>
+							</div>
+						</div>
+					</xen:if>
+				</div>
+			</div>
+		</div>	
+	
+	
+	
+	
+		<div class="rightrvw" style="margin-top: 15px;">
+
+			<xen:if is="({$is_claimable} == 1)">
+				<xen:if is="{$visitor.user_id} == 0">
+					<label  for="LoginControl" id="ClaimButton">
+						<a href="index.php?login/" class="inner">	
+							{xen:phrase claim_listing}!
+						</a>
+					</label>
+				<xen:else />
+					<xen:if is="{$perms.canClaimListing}">
+					<label id="ClaimButton">
+						<a href="{xen:link reviews}{$thread.url}/claim-listing-dialogue" 
+							class="inner OverlayTrigger"
+							data-overlayoptions="{"fixed":false}" 
+							>
+							{xen:phrase claim_listing}!
+						</a>
+					</label>
+					</xen:if>
+				</xen:if>
+			</xen:if>
+			<xen:if is="{$allowClaimable} && ({$is_claimable} == 0) &&  {$perms.canSetClaimable}">			
+					<label id="SetClaimButton" style="margin:15px 10px;">
+						<a href="{xen:link reviews}{$thread.url}/claimable-dialogue"
+							class="inner OverlayTrigger"
+							data-overlayOptions="{&quot;fixed&quot;:false}">{xen:phrase make_this_claimable}
+						</a>			
+					</label>
+			</xen:if>
+			
+		</div>
+			
+
+	</div>
+</div>]]></template>
+    <template title="sfdirectory_map_view.css" version_id="21" version_string="1.1.5"><![CDATA[.revspacer {
+    height:2px;
+}
+
+#ClaimButton {
+    background-color: white;
+    border: 1px solid {xen:property secondaryLight};
+    border-radius: 8px 8px 8px 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    display: block;
+    height: 30px;
+    line-height: 30px;
+    margin: 10px 30px;
+    padding: 3px;
+    text-align: center;
+}
+
+#SetClaimButton {
+    background-color: white;
+    border: 1px solid {xen:property primaryLighter};
+    border-radius: 8px 8px 8px 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    display: block;
+    height: 30px;
+    line-height: 30px;
+    margin: 10px 30px;
+    padding: 3px;
+    text-align: center;
+}
+
+#SetClaimButton .inner {
+    background: url("styles/default/xenforo/gradients/form-button-white-25px.png") repeat-x scroll center -7px {xen:property primaryLightish};
+    border-radius: 4px 4px 4px 4px;
+    color: {xen:property textCtrlBackground};
+    display: block;
+    font-family: Calibri,'Trebuchet MS',Verdana,Geneva,Arial,Helvetica,sans-serif;
+    font-size: 12pt;
+    font-weight: bold;
+    text-shadow: 0 0 0 transparent, 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+#SetClaimButton .inner:hover {
+    text-decoration: none;
+    background-color: {xen:property primaryLight};
+}
+
+#ClaimButton .inner {
+    background: url("styles/default/xenforo/gradients/form-button-white-25px.png") repeat-x scroll center -7px {xen:property secondaryMedium};
+    border-radius: 4px 4px 4px 4px;
+    color: {xen:property textCtrlBackground};
+    display: block;
+    font-family: Calibri,'Trebuchet MS',Verdana,Geneva,Arial,Helvetica,sans-serif;
+    font-size: 12pt;
+    font-weight: bold;
+    text-shadow: 0 0 0 transparent, 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+#ClaimButton .inner:hover {
+    text-decoration: none;
+    background-color: {xen:property secondaryLight};
+}
+.fullleft{
+    float: left;
+    margin: 5px 0 10px;
+    width: 100%;
+}
+.halfleft{
+	float: left;
+	width: 50%;
+}
+
+.userin{
+	margin-right: 10px;
+}
+
+.dirtblspcr{
+margin-right:10px;
+overflow:hidden;
+}
+
+.dirtblrow{
+display: table-row;
+}
+
+div.reviewattach {
+	height:100%;
+	margin-bottom: 5px;    
+	background-color: {xen:property primaryLightest};    
+	border-radius: 4px 4px 4px 4px;  
+	border: 1px solid {xen:property primaryLighterStill}; 
+	padding: 10px;
+}
+
+.reviewimg { 
+	background-position: 2px 2px;
+	background-repeat: no-repeat;
+	display: block;
+	overflow: hidden;
+	word-wrap: normal;
+	background-color: {xen:property contentBackground};
+	border: 1px solid {xen:property primaryLighter};
+	border-radius: 4px 4px 4px 4px;
+	padding: 2px;
+}
+
+.centerrvw{
+	float: left;
+	width: 50%; 
+	overflow: hidden;
+}
+
+.leftrvw{
+	float: left;
+	width: 30%;
+	overflow: hidden;
+}
+
+
+.rightrvw{
+	float: right;
+	width: 20%;
+	overflow: hidden;
+}
+
+
+.bottomleftmrvw {
+	float: left;
+	width: 30%;
+	height: 45px;
+	overflow: hidden;
+}
+
+]]></template>
+    <template title="sfdirectory_nav" version_id="31" version_string="1.1.8.3"><![CDATA[
+	<ul class="secondaryContent blockLinksList">
+		<li><a href="{xen:link full:directory}">{xen:phrase directory_home}</a></li>
+		
+		<li><a href="{xen:link full:directory/new}">{xen:phrase new_listings}</a></li>
+		<xen:if is="{$visitor.user_id} && {$perms.canSubmitListing}">
+			<li><a href="{xen:link full:directory/create-listing}">{xen:phrase submit_listing}</a></li>
+		</xen:if>
+	</ul>
+]]></template>
+    <template title="sfdirectory_sub_index" version_id="35" version_string="1.2.0.3"><![CDATA[<xen:title>{xen:phrase directory_of} {$sub_directory.title} {xen:phrase post_fix_directory_of}</xen:title>
+<xen:require css="account.css" />
+<xen:require css="sfdirectory.css" />
+
+<xen:navigation>
+	<xen:breadcrumb source="$breadCrumbs" />
+</xen:navigation>
+
+<xen:if is="{$DisplaySubDirectoryRSidebar}">
+	<xen:sidebar>
+		
+		<xen:if is="{$DisplayRecentBuisnessListings}">
+			<xen:include template="sfdir_new_business_listings" />
+		</xen:if>
+	
+		<xen:if is="{$DisplayDirectoryStatistics}">
+			<xen:if is="{$details}">	
+				<div class="section sfdirSidebar sfdirSidebarStats">
+					<div class="secondaryContent">
+						<h3>{xen:phrase sfdir_directory_statistics}</h3>
+						<div class="pairsJustified">
+							<dl><dt>{xen:phrase sfdir_active_links}</dt>
+								<dd>{xen:number $details.active_count}</dd></dl>
+							<dl><dt>{xen:phrase sfdir_pending_links}</dt>
+								<dd>{xen:number $details.non_active_count}</dd></dl>
+							<dl><dt>{xen:phrase sfdir_total_categories}</dt>
+								<dd>{xen:number $details.catagory_count}</dd></dl>
+							<dl><dt>{xen:phrase sfdir_sub_categories}</dt>
+								<dd>{xen:number $details.sub_catagory_count}</dd></dl>
+							<dl><dt>{xen:phrase sfdir_reviews_count}</dt>
+								<dd>{xen:number $details.review_count}</dd></dl>
+						</div>
+					</div>
+				</div>
+			</xen:if>
+		</xen:if>
+		
+		
+		<xen:if is="{$DisplayRecentBuisnessReviews}">
+			<xen:if is="{$recentReviews}">
+				<div class="section sfdirSidebar sfdirSidebarReviews">
+					<div class="secondaryContent">
+						<h3>{xen:phrase sfdir_recent_reviews}</h3>				
+						<ol class="sfdirRecentReviewList">
+							<xen:foreach loop="$recentReviews" value="$recentReview">
+								<xen:include template="sfdir_recent_review" />
+							</xen:foreach>
+						</ol>
+					</div>
+				</div>
+			</xen:if>
+		</xen:if>
+		
+	</xen:sidebar>
+</xen:if>
+
+<div class="container subDir">
+	<div class="subDirContent section sectionMain">
+		<div class="primaryContent" style="text-align: center;">{$sub_directory.title} {xen:phrase post_fix_directory_of}</div>
+		<xen:foreach loop="$category_list" value="$category">
+		<div class="dirBlock subDirBlock">
+			<div >
+				<h3>
+					<a href="{xen:link full:directory}{$category.url}">{$category.title}</a>
+					<xen:if is="{$subDirLisingCount}">
+						<span class="muted">
+						<xen:if is="{$topCountIncChild}">
+							({$category.tot_count})
+						<xen:else />
+							({$category.discussion_count})
+						</xen:if>
+						</span>
+					</xen:if>
+				</h3>
+			</div>
+		</div>
+		</xen:foreach>
+	</div>
+</div>
+
+
+
+<div class="container">
+
+<xen:if is="{$allowDirSubCatSideBar}">
+	<div class="categoriesSideBar">
+		<ul>
+			<xen:hook name="dir_wrapper_sidebar">
+			<li class="section"><h4 class="heading">{xen:phrase dir_categories}</h4>
+				<!--<h4 class="subHeading">{xen:phrase alerts}</h4>-->
+				<ul>
+				<xen:hook name="dir_wrapper_sidebar_your_account">
+				<xen:foreach loop="$root_directories" value="$category">
+					<li>
+						<a class="{xen:if "{$selectedKey} == 'alerts/latest'", 'secondaryContent', 'primaryContent'}"
+						href="{xen:link full:directory}{$category.url}">{$category.title} </a>
+					</li>
+				</xen:foreach>
+				</xen:hook>
+				</ul>
+			</li>
+			</xen:hook>
+		</ul>
+	</div>
+</xen:if>
+
+
+	<div class="accountContent section sectionMain">
+
+		<xen:if is="{$visitor.user_id} && {$perms.canSubmitListing}" >
+		<div style="margin: 5px 0;text-align: right;">
+			<a class="callToAction" href="{xen:link full:directory/create-listing, $sub_directory}">
+				<span>{xen:phrase submit_new_listing}</span>
+			</a>
+		</div>
+		</xen:if>
+
+		<xen:if is="{$visitor.user_id} == 0">
+		<div style="margin: 5px 0;text-align: right;">		
+			<label for="LoginControl">
+			<a class="concealed noOutline callToAction" href="index.php?login/">
+				<span>{xen:phrase log_in_to_add_listing}</span>
+			</a>
+			</label>
+
+		</div>
+		</xen:if>
+
+
+
+
+		<xen:pagenav link="directory/{$sub_dir_url}/"  linkparams="{$pageNavParams}" page="{$page}" perpage="{$threadsPerPage}" total="{$totalThreads}" />
+
+
+		<div class="discussionList section sectionMain">
+
+
+
+
+<xen:if is="{$prefix_id}">
+	<div class="discussionListFilters secondaryContent" >
+		<h3 class="filtersHeading">{xen:phrase filters}:</h3>
+		<dl class="pairsInline filterPairs">
+
+			<dt>{xen:phrase prefix}:</dt>
+			<dd><a href="{xen:link 'full:directory/{$sub_dir_url}/'}" class="removeFilter Tooltip" title="{xen:phrase remove_filter}">{xen:helper threadPrefix, $prefix_id, escaped, ''} <span class="gadget">x</span></a></dd>
+
+		</dl>
+		<dl class="pairsInline removeAll">
+			<dt>{xen:phrase remove_all_filters}:</dt>
+			<dd><a href="{xen:link 'full:directory/{$sub_dir_url}/'}" class="removeAllFilters Tooltip" title="{xen:phrase remove_all_filters}">x</a></dd>
+		</dl>
+	</div>
+
+<xen:else />
+
+	<xen:if is="{$displaySubFilterDropDown}">
+		<div class="discussionListFilters secondaryContent" >
+			<div>
+				<h3 class="filtersHeading">{xen:phrase filter_by_prefix}</h3>
+				<br/>
+			</div>
+			<select id="ctrl_event_prefix" class="textCtrl" name="event_prefix" onchange="location = this.options[this.selectedIndex].value;">
+
+			<option value="{xen:link 'full:directory/{$sub_dir_url}/', ''}"> </option>
+				<xen:foreach loop="$prefixes" value="$prefix">
+					<xen:include template="sfdirectory_sub_index_filter" />
+				</xen:foreach>
+			</select>
+		</div>
+	</xen:if>
+</xen:if>
+
+
+
+			<xen:include template="sfdirectory_list" /> 
+		</div>
+
+
+		<xen:if is="{$visitor.user_id} && {$perms.canSubmitListing}">
+		<div style="margin: 5px 0;text-align: right;">
+			<a class="callToAction" href="{xen:link full:directory/create-listing, $sub_directory}">
+				<span>{xen:phrase submit_new_listing}</span>
+			</a>
+		</div>
+		</xen:if>
+
+		<xen:if is="{$visitor.user_id} == 0">
+		<div style="margin: 5px 0;text-align: right;">		
+			<label for="LoginControl">
+			<a class="concealed noOutline callToAction" href="index.php?login/">
+				<span>{xen:phrase log_in_to_add_listing}</span>
+			</a>
+			</label>
+
+		</div>
+		</xen:if>
+
+
+	<xen:pagenav link="directory/{$sub_dir_url}/"  linkparams="{$pageNavParams}" page="{$page}" perpage="{$threadsPerPage}" total="{$totalThreads}" />
+	</div>
+</div>	
+
+<xen:include template="sfKomuKuJVC_Footer" />]]></template>
+    <template title="sfdirectory_sub_index_filter" version_id="35" version_string="1.2.0.3"><![CDATA[<option value="{xen:link 'full:directory/{$sub_dir_url}/', '', 't={$prefix.urltitle}', 'prefix_id={$prefix.prefix_id}'}">{$prefix.title}</option>
+
+]]></template>
+    <template title="sfdir_attachment_upload_button" version_id="16" version_string="1.1.0"><![CDATA[	<xen:require js="js/xenforo/attachment_editor.js" />
+	<xen:if is="{$xenOptions.swfUpload}">
+		<xen:require js="js/swfupload/swfupload.min.js" />
+	</xen:if>	
+	<xen:require css="attachment_editor.css" />
+
+	<span id="AttachmentUploader" class="buttonProxy AttachmentUploader"
+		style="display: none"
+		data-placeholder="#SWFUploadPlaceHolder"
+		data-trigger="#ctrl_uploader"
+		data-postname="upload"
+		data-maxfilesize=""
+		data-maxuploads=""
+		data-extensions="*.jpg;*.png;*.gif;*.jpeg;*.JPG;*.PNG;*.GIF;*.JPEG;"
+		data-action="{xen:link 'full:attachments/do-upload.json', '',
+			'hash=',
+			'content_type='}"
+		data-err-110="{xen:phrase uploaded_file_is_too_large}"
+		data-err-120="{xen:phrase uploaded_file_is_empty}"
+		data-err-130="{xen:phrase uploaded_file_does_not_have_an_allowed_extension}"
+		data-err-unknown="{xen:phrase upload_failed}">
+		
+		<span id="SWFUploadPlaceHolder"></span>		
+			
+		<input type="button" value="bla"
+			id="ctrl_uploader" class="button OverlayTrigger DisableOnSubmit"
+			data-href=""
+			data-hider="#AttachmentUploader" />
+		<span class="HiddenInput" data-name="_xfSessionId" data-value="{$sessionId}"></span>
+
+	</span>
+
+	<noscript>
+		<a href="" class="button" target="_blank"></a>
+	</noscript>]]></template>
+    <template title="sfdir_claimable" version_id="30" version_string="1.1.8.2"><![CDATA[<xen:title>{xen:phrase sfdir_set_listing_to_claimable}</xen:title>
+
+
+
+<form class="xenForm formOverlay AutoValidator" 
+	data-redirect="on" 
+action="{xen:link 'reviews/'}{$threadURL}/SetClaimable"
+
+	method="post" >
+<br />
+{xen:phrase sfdir_are_you_sure_you_want_to_set_this_listing_to_claimable} <br />
+<br />
+{xen:phrase sfdir_setting_this_listing_to_claimable_means}
+<br />	
+<br />
+
+
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>	
+		<dd>
+			<input type="submit" class="button primary" accesskey="s" value="{xen:phrase set_claimable}"> 
+			<input type="reset" class="button OverlayCloser" value="Cancel">
+		</dd>		
+	</dl>
+	<input type="hidden" name="threadURL" value="{$threadURL}" />
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+	<xen:include template="sfKomuKuJVC_Footer" />	
+	
+</form>]]></template>
+    <template title="sfdir_claim_listing" version_id="18" version_string="1.1.2"><![CDATA[<xen:title>Claim This Listing</xen:title>
+
+<form class="xenForm formOverlay AutoValidator" data-redirect="on" action="{xen:link 'reviews/'}{$threadURL}/claim-moderation-event"
+	method="post" >
+
+Do you own this business, or help run it? <br />
+<br />
+If so, you can claim this listing <br />
+Once claimed, you can update the listing information and manage the listing details <br />
+<br />
+
+If possible, please provide some proof of ownership below.<br />
+Sending this from a forum account registered with the companies email address is often enough.  
+If you don't have any proof, just add the text "no proof" and someone will get back to you.
+<br />
+<br />
+This claim will then be sent to a moderation queue for the administrators / moderators 
+to manage. <br />
+	
+	<dl class="ctrlUnit">
+		<dt><label for="ctrl_ownershipproof">{xen:phrase proof_of_ownership}:</label></dt>
+		<dd><textarea name="proof" class="textCtrl Elastic" id="ctrl_proof" rows="4"></textarea></dd>
+	</dl>
+
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>	
+		<dd>
+			<input type="submit" class="button primary" accesskey="s" value="{xen:phrase claim_listing}"> 
+			<input type="reset" class="button OverlayCloser" value="Cancel">
+
+		</dd>		
+	</dl>
+	
+<xen:include template="sfKomuKuJVC_Footer" />
+
+<input type="hidden" name="threadid" value="{$threadid}" />
+<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />	
+</form>
+
+]]></template>
+    <template title="sfdir_forum_view" version_id="38" version_string="1.2.0.6"><![CDATA[<xen:title>{$forum.title} {xen:helper pagenumber, $page}</xen:title>
+
+
+<xen:if is="{$forum.description} AND {xen:property threadListDescriptions}">
+	<xen:description class="baseHtml">{xen:raw $forum.description}</xen:description>
+</xen:if>
+
+<xen:navigation>
+	<xen:breadcrumb source="$nodeBreadCrumbs" />
+</xen:navigation>
+
+<xen:container var="$head.canonical">
+	<link rel="canonical" href="{xen:link 'canonical:forums', $forum, 'page={$page}'}" /></xen:container>
+
+<xen:container var="$head.rss">
+	<link rel="alternate" type="application/rss+xml" title="{xen:phrase rss_feed_for_x, 'title={$forum.title}'}" href="{xen:link forums/index.rss, $forum}" /></xen:container>
+
+<xen:container var="$quickNavSelected">node-{$forum.node_id}</xen:container>
+
+<xen:if is="{$canPostThread}">
+<div style="margin: 5px 0;text-align: right;">
+	<a href="{xen:link 'directory'}" class="callToAction"><span>Add Listing</span></a>
+</div>
+</xen:if>
+
+<xen:if is="{$showPostedNotice}">
+	<div class="importantMessage">{xen:phrase message_submitted_displayed_pending_approval}</div>
+</xen:if>
+
+<xen:if is="{$renderedNodes}">
+	<xen:include template="ad_forum_view_above_node_list" />
+	<xen:include template="node_list" />
+</xen:if>
+
+<xen:hook name="forum_view_pagenav_before" params="{xen:array 'forum={$forum}'}" />
+
+<xen:include template="ad_forum_view_above_thread_list" />
+
+<div class="pageNavLinkGroup">
+
+	<div class="linkGroup SelectionCountContainer">
+		<xen:if is="{$visitor.user_id}">
+			<a href="{xen:link 'forums/mark-read', $forum, 'date={$serverTime}'}" class="OverlayTrigger">{xen:phrase sfdir_mark_this_forum_read}</a>
+		</xen:if>
+		<xen:if is="{$canSearch}">
+			<div class="Popup">
+				<a href="{xen:link search, '', 'type=post', 'node_id={$forum.node_id}'}" method="post" rel="Menu">{xen:phrase sfdir_search_this_forum}</a>
+				
+				<xen:comment>
+				<div class="Menu JsOnly">
+					<form action="{xen:link search/search}" method="post" class="xenForm">
+						<div class="primaryContent menuHeader">
+							<h3>{xen:phrase search_this_forum}</h3>
+						</div>
+						<dl class="ctrlUnit fullWidth">
+							<dt></dt>
+							<dd><input type="search" name="keywords" results="0" class="textCtrl" placeholder="{xen:phrase search}..." /></dd>
+						</dl>
+						<dl class="ctrlUnit fullWidth secondaryContent">
+							<dt></dt>
+							<dd><ul>
+								<li><label><input type="checkbox" name="title_only" value="1" /> {xen:phrase search_titles_only}</label></li>
+								<li><label><input type="checkbox" name="group_discussion" value="1" /> {xen:phrase display_results_as_threads}</label></li>
+							</ul></dd>
+						</dl>
+						<dl class="ctrlUnit fullWidth submitUnit">
+							<dt></dt>
+							<dd><input type="submit" class="button" value="{xen:phrase find_now}" /></dd>
+						</dl>
+						<a href="{xen:link search, '', 'type=post', 'node_id={$forum.node_id}'}" class="linkButton">{xen:phrase advanced_search}</a>
+					
+						<input type="hidden" name="type" value="post" />
+						<input type="hidden" name="child_nodes" value="1" />
+						<input type="hidden" name="nodes[]" value="{$forum.node_id}" />
+						<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+					</form>
+				</div>
+				</xen:comment>
+			
+				<div class="Menu JsOnly formPopup">
+					<form action="{xen:link search/search}" method="post">
+						<div class="primaryControls">
+							<input type="search" name="keywords" value="" class="textCtrl" placeholder="{xen:phrase search}..." results="0" title="{xen:phrase enter_your_search_and_hit_enter}" />
+						</div>
+						
+						<div class="secondaryControls">
+							<div class="controlsWrapper">
+							
+								<dl class="ctrlUnit fullWidth">
+									<dt></dt>
+									<dd><ul>
+										<li><label><input type="checkbox" name="title_only" value="1" /> {xen:phrase search_titles_only}</label></li>
+										<li><label><input type="checkbox" name="group_discussion" value="1" /> {xen:phrase display_results_as_threads}</label></li>
+									</ul></dd>
+								</dl>
+												
+							</div>
+								
+							<dl class="ctrlUnit submitUnit fullWidth">
+								<dt></dt>
+								<dd><input type="submit" value="{xen:phrase find_now}" class="button primary"></dd>
+							</dl>
+							
+							<a href="{xen:link search, '', 'type=post', 'node_id={$forum.node_id}'}" class="advSearchLink">{xen:phrase advanced_search}...</a>
+						</div>
+					
+						<input type="hidden" name="type" value="post" />
+						<input type="hidden" name="child_nodes" value="1" />
+						<input type="hidden" name="nodes[]" value="{$forum.node_id}" />
+						<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+					</form>
+				</div>
+
+
+
+			</div>
+		</xen:if>
+	</div>
+
+	<xen:pagenav link="forums" linkdata="{$forum}" linkparams="{$pageNavParams}" page="{$page}" perpage="{$threadsPerPage}" total="{$totalThreads}" />
+
+</div>
+
+
+
+<div class="discussionList section sectionMain">
+	<xen:include template="sfdir_thread_list" /> 
+</div>
+	
+<div class="pageNavLinkGroup">
+	<div class="linkGroup">
+
+
+<xen:if is="{$canPostThread}">
+<div style="margin: 5px 0;text-align: right;">
+	<a href="{xen:link 'directory'}" class="callToAction"><span>Add Listing</span></a>
+</div>
+<xen:elseif is="{$visitor.user_id}" />
+
+			({xen:phrase no_permission_to_post})
+		<xen:else />
+			<label for="LoginControl"><a href="{xen:link login}" class="concealed">({xen:phrase log_in_or_sign_up_to_post})</a></label>
+		</xen:if>
+	</div>
+
+	<xen:pagenav link="forums" linkdata="{$forum}" linkparams="{$pageNavParams}" page="{$page}" perpage="{$threadsPerPage}" total="{$totalThreads}" />
+</div>]]></template>
+    <template title="sfdir_map_large" version_id="34" version_string="1.2.0.2"><![CDATA[<xen:title>{xen:phrase sfdir_map_directions_for} {$thread.title}</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb source="$breadCrumbs" />
+</xen:navigation>
+
+<div class="sectionMain" >
+	<div class="secondaryContent">
+		<iframe  frameborder="0" scrolling="no" marginheight="0" marginwidth="0"
+			width="100%" height="590px" src="http://maps.google.com/maps?q={$listingaddress}&output=embed">
+		</iframe>
+		<xen:include template="sfKomuKuJVC_Footer" />	
+	</div>
+</div>
+
+
+
+
+
+
+
+]]></template>
+    <template title="sfdir_message" version_id="15" version_string="1.0.15"><![CDATA[<xen:require css="message.css" />
+<xen:require css="bb_code.css" />
+
+<li id="{$messageId}" class="message {xen:if $message.isDeleted, 'deleted'} {xen:if '{$message.is_admin} OR {$message.is_moderator}', 'staff'} {xen:if $message.isIgnored, ignored}" 
+	<xen:if is="(({$is_claimable} != 1) || {$claimableAnonymous} != 1) || ({$post.position} != 0)">
+		data-author="{$message.username}"
+	</xen:if>
+>
+
+<xen:if is="(({$is_claimable} == 0) || {$claimableAnonymous} != 1) || ({$post.position} != 0)">
+		<xen:include template="message_user_info">
+			<xen:map from="$message" to="$user" /> 
+		</xen:include>
+	</xen:if>
+	<div 
+		<xen:if is="({$claimableAnonymous} == 1) AND ({$is_claimable} != 0) AND ({$post.position} == 0)">
+			style="margin-left: 0;" 
+		</xen:if>
+		class="messageInfo primaryContent">
+
+		<xen:if is="{$message.isNew}"><strong class="newIndicator"><span></span>{xen:phrase new}</strong></xen:if>
+		
+		<xen:if hascontent="true">
+			<ul class="messageNotices">
+				<xen:contentcheck>
+					<xen:hook name="message_notices" params="{xen:array 'message={$message}'}">
+						<xen:if is="{$message.warning_message}">
+							<li class="warningNotice"><span class="icon Tooltip" title="{xen:phrase warning}" data-tipclass="iconTip flipped"></span>{$message.warning_message}</li>
+						</xen:if>
+						<xen:if is="{$message.isDeleted}">
+							<li class="deletedNotice"><span class="icon Tooltip" title="{xen:phrase deleted}" data-tipclass="iconTip flipped"></span>{xen:phrase this_message_has_been_removed_from_public_view}</li>
+						<xen:elseif is="{$message.isModerated}" />
+							<li class="moderatedNotice"><span class="icon Tooltip" title="{xen:phrase awaiting_moderation}" data-tipclass="iconTip flipped"></span>{xen:phrase this_message_is_awaiting_moderator_approval_and_is_invisible_to_normal}</li>
+						</xen:if>
+						<xen:if is="{$message.isIgnored}">
+							<li>{xen:phrase you_are_ignoring_content_by_this_member} <a href="javascript:" class="jsOnly DisplayIgnoredContent">{xen:phrase show_ignored_content}</a></li>
+						</xen:if>
+					</xen:hook>
+				</xen:contentcheck>
+			</ul>
+		</xen:if>
+		
+		<xen:hook name="message_content" params="{xen:array 'message={$message}'}">
+		<div class="messageContent">		
+			<article>
+				<blockquote class="messageText ugc baseHtml{xen:if $message.isIgnored, ' ignored'}">
+					<xen:include template="ad_message_body" />
+					{xen:raw $message.messageHtml}
+				</blockquote>
+			</article>
+			{xen:raw $messageContentAfterTemplate}
+		</div>
+		</xen:hook>
+		
+		<xen:if is="(({$is_claimable} == 0) || {$claimableAnonymous} != 1) || ({$post.position} != 0)">
+			<xen:if is="{$visitor.content_show_signature} && {$message.signature}">
+				<div class="baseHtml signature ugc{xen:if $message.isIgnored, ' ignored'}"><aside>{xen:raw $message.signatureHtml}</aside></div>
+			</xen:if>
+			{xen:raw $messageAfterTemplate}
+		</xen:if>
+		
+		
+		<div id="likes-{$messageId}"><xen:if is="{$message.likes}"><xen:include template="likes_summary" /></xen:if></div>
+	</div>
+	
+	<xen:include template="ad_message_below" />
+	
+</li>]]></template>
+    <template title="sfdir_modify_categories" version_id="30" version_string="1.1.8.2"><![CDATA[<xen:title>{xen:phrase add_modify_categories}</xen:title>
+
+
+<form action="{xen:link 'reviews'}{$threadURL}/ModifyCategories" method="post"
+	class="xenForm formOverlay AutoValidator"
+	data-redirect="on"	
+>
+
+
+	<fieldset>	
+		<dl class="ctrlUnit">
+		<dt><label for="ctrl_cat1">{xen:phrase sfdir_main_category}:</label></dt>
+		<dd>
+
+			<select id="ctrl_cat1" class="textCtrl" name="cat1">
+				<xen:foreach loop="$flat_cat_list" value="$category">
+					<option value="{$category.node_id}"
+						<xen:if is="{$category.node_id} == {$selected_cats.cat1}">
+							selected="selected"
+						</xen:if>
+					>{$category.dash_title}</option>	
+				</xen:foreach>
+			</select>
+
+		</dd>
+		</dl>
+
+		<dl class="ctrlUnit">
+		<dt><label for="ctrl_cat2">{xen:phrase sfdir_2nd_category}:</label></dt>
+		<dd>
+
+			<select id="ctrl_cat2" class="textCtrl" name="cat2">
+				<xen:foreach loop="$flat_cat_list" value="$category">
+					<option value="{$category.node_id}"
+						<xen:if is="{$category.node_id} == {$selected_cats.cat2}">
+							selected="selected"
+						</xen:if>
+					>{$category.dash_title}</option>	
+				</xen:foreach>
+			</select>
+
+		</dd>
+		</dl>
+		
+		<dl class="ctrlUnit">
+		<dt><label for="ctrl_cat3">{xen:phrase sfdir_3rd_category}:</label></dt>
+		<dd>
+
+			<select id="ctrl_cat3" class="textCtrl" name="cat3">
+				<xen:foreach loop="$flat_cat_list" value="$category">
+					<option value="{$category.node_id}"
+						<xen:if is="{$category.node_id} == {$selected_cats.cat3}">
+							selected="selected"
+						</xen:if>
+					>{$category.dash_title}</option>	
+				</xen:foreach>
+			</select>
+
+		</dd>
+		</dl>
+		
+		<dl class="ctrlUnit">
+		<dt><label for="ctrl_cat4">{xen:phrase sfdir_4th_category}:</label></dt>
+		<dd>
+
+			<select id="ctrl_cat4" class="textCtrl" name="cat4">
+				<xen:foreach loop="$flat_cat_list" value="$category">
+					<option value="{$category.node_id}"
+						<xen:if is="{$category.node_id} == {$selected_cats.cat4}">
+							selected="selected"
+						</xen:if>
+					>{$category.dash_title}</option>	
+				</xen:foreach>
+			</select>
+
+		</dd>
+		</dl>
+		
+		<dl class="ctrlUnit">
+		<dt><label for="ctrl_cat5">{xen:phrase sfdir_5th_category}:</label></dt>
+		<dd>
+
+			<select id="ctrl_cat5" class="textCtrl" name="cat5">
+				<xen:foreach loop="$flat_cat_list" value="$category">
+					<option value="{$category.node_id}"
+						<xen:if is="{$category.node_id} == {$selected_cats.cat5}">
+							selected="selected"
+						</xen:if>
+					>{$category.dash_title}</option>	
+				</xen:foreach>
+			</select>
+
+		</dd>
+		</dl>
+		
+		
+		
+		<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd>
+			<input type="submit" value="{xen:phrase update_listing}" class="button primary" />
+		</dd>
+		</dl>
+	</fieldset>
+<input type="hidden" name="oldCat1" value="{$selected_cats.cat1}" />
+<input type="hidden" name="oldCat2" value="{$selected_cats.cat2}" />
+<input type="hidden" name="oldCat3" value="{$selected_cats.cat3}" />
+<input type="hidden" name="oldCat4" value="{$selected_cats.cat4}" />
+<input type="hidden" name="oldCat5" value="{$selected_cats.cat5}" />
+	
+    <input type="hidden" name="threadURL" value="{$threadURL}" />
+    <input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>
+]]></template>
+    <template title="sfdir_modify_logo" version_id="30" version_string="1.1.8.2"><![CDATA[<xen:title>{xen:phrase add_modify_logo_url}</xen:title>
+
+
+<form action="{xen:link 'reviews'}{$threadURL}/ModifyLogo" method="post"
+	class="xenForm formOverlay AutoValidator"
+	data-redirect="on"	
+>
+
+If you own a website for your business, you can add a website logo to your listing by linking to the image
+<br/><br/>
+The logo should be approximately 250px (width) × 200px (height)
+<br/>
+<br/>						
+Examples:<br/>
+<br/>
+www.yoursite/logo.jpg<br/>
+http://www.yoursite/somefolder/siteimg.png<br/>
+http://yoursite/someotherfolder/imgname.gif<br/>
+<br/>
+If you don't own a website, simply upload your logo to the business details
+
+	<fieldset>	
+		<dl class="ctrlUnit">
+		<dt></dt>
+		<dd>
+			<ul>
+				<li>
+					<p class="hint">{xen:phrase sfdir_this_field_is_optional_allowing_you_to_add_a_site_logo}</p>
+				</li>
+			</ul>	
+		</dd>
+		<dt><label for="ctrl_logo_image_url">{xen:phrase logo_image_url}:</label></dt>
+		<dd>
+		<input type="text" name="logo_image_url" style="display: block;width: 220px;" 
+		class="textCtrl" maxlength="100" value="{$logo_image_url}"/>
+		</dd>
+		</dl>
+	
+		<dl class="ctrlUnit submitUnit">
+
+		<dd>
+			<input type="submit" value="{xen:phrase update_listing}" class="button primary" />
+		</dd>
+		</dl>
+	</fieldset>
+
+	
+    <input type="hidden" name="threadURL" value="{$threadURL}" />
+    <input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>
+]]></template>
+    <template title="sfdir_modify_youtube" version_id="17" version_string="1.1.1"><![CDATA[
+<xen:title>{xen:phrase add_modify_youtube_url}</xen:title>
+
+
+<form action="{xen:link 'reviews'}{$threadURL}/ModifyYoutube" method="post"
+	class="xenForm formOverlay AutoValidator"
+	data-redirect="on"	
+>
+
+You can provide more information about your business by adding a relevant YouTube movie to your business listing.
+<br/><br/>
+Either find a relevant existing YouTube movie, or upload your own movie to YouTube.
+<br/><br/>
+Once you've found the movie you wish to add, the YouTube URL can be found under the movie by clicking the &quot;embed&quot; button. 
+<br/>
+<br/>						
+Examples:<br/>
+<br/>
+www.youtube.com/watch?v=TswOLHUQFPk<br/>
+youtu.be/TswOLHUQFPk <br/>
+www.youtube.com/embed/TswOLHUQFPk<br/>
+						
+
+
+
+
+	<fieldset>	
+		<dl class="ctrlUnit">
+
+			<dt></dt>
+			<dd>
+				<ul>
+					<li>
+						<p class="hint">This field is optional, allowing you to add media</p>
+					</li>
+				</ul>	
+			</dd>
+
+		<dt><label for="ctrl_youtube_url">{xen:phrase youtube_url}:</label></dt>
+		<dd>
+		<input type="text" name="youtube_url" style="display: block;width: 220px;" 
+		class="textCtrl" maxlength="100" value="{$youtube_url}"/>
+
+
+
+		</dd>
+		</dl>
+
+	
+		<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd>
+			<input type="submit" value="{xen:phrase update_listing}" class="button primary" />
+		</dd>
+		</dl>
+	</fieldset>
+
+	
+    <input type="hidden" name="threadURL" value="{$threadURL}" />
+    <input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>
+]]></template>
+    <template title="sfdir_new_business_listing" version_id="25" version_string="1.1.7.2"><![CDATA[<xen:require css="sfdir_recent_review.css" />
+<li class="sfdirRecentReview">
+	<xen:avatar user="$recentBusinessListing" size="s" img="true" />	
+	<div class="sfdirRecentReviewInfo">
+		<div class="sfdirRecentReviewTitle"><a href="{xen:link 'reviews', $recentBusinessListing}">{xen:helper snippet, $recentBusinessListing.title, 32}</a></div>	
+		<div>
+			<span class="sfdirRecentReviewtUser"><xen:username user="$recentBusinessListing" />,</span>
+			<span class="sfdirRecentReviewLink"><a href="{xen:link reviews, $recentBusinessListing}"><xen:datetime time="$recentBusinessListing.post_date" /></a></span>
+		</div>
+	</div>
+</li>]]></template>
+    <template title="sfdir_new_business_listings" version_id="26" version_string="1.1.7.3"><![CDATA[<xen:if is="{$recentBusinessListings}">
+<div class="section sfdirSidebar sfdirSidebarNewListings">
+	<div class="secondaryContent">
+		<h3><a href="{xen:link directory/new}">{xen:phrase sfdir_new_business_listings}</a></h3>			
+		<ol class="sfdirRecentReviewList">
+			<xen:foreach loop="$recentBusinessListings" value="$recentBusinessListing">
+				<xen:include template="sfdir_new_business_listing" />
+			</xen:foreach>
+		</ol>
+	</div>
+</div>
+</xen:if>]]></template>
+    <template title="sfdir_new_thread_list" version_id="17" version_string="1.1.1"><![CDATA[<xen:require css="discussion_list.css" />
+<xen:require js="js/xenforo/discussion_list.js" />
+<form action="{xen:link inline-mod/thread/switch}" method="post"
+	class="DiscussionList InlineModForm"
+	data-cookieName="threads"
+	data-controls="#InlineModControls"
+	data-imodOptions="#ModerationSelect option">
+
+	<ol class="discussionListItems">
+	<xen:if is="{$stickyThreads} OR {$threads}">
+		<xen:set var="$showLastPageNumbers">1</xen:set>
+	
+		<xen:hook name="thread_list_stickies">
+		<xen:foreach loop="$stickyThreads" value="$thread">
+			<xen:include template="sfdir_thread_list_item" />
+		</xen:foreach>
+		</xen:hook>
+		
+		<xen:include template="ad_thread_list_below_stickies" />
+		
+		<xen:hook name="thread_list_threads">
+		<xen:foreach loop="$threads" value="$thread">
+			<xen:include template="sfdir_thread_list_item" />
+		</xen:foreach>
+		</xen:hook>
+		
+		<xen:edithint template="thread_list_item_edit" />
+	<xen:else />
+		<li class="primaryContent">{xen:phrase there_no_threads_to_display}</li>
+	</xen:if>
+	</ol>
+
+	<xen:if is="{$totalThreads} OR {$inlineModOptions}">
+		<div class="sectionFooter InlineMod SelectionCountContainer">
+			<xen:if is="{$totalThreads}"><span class="contentSummary">{xen:phrase showing_threads_x_to_y_of_z, 'start={xen:number $threadStartOffset}', 'end={xen:number $threadEndOffset}', 'total={xen:number $totalThreads}'}</span></xen:if>
+
+			<xen:if is="{$inlineModOptions}">
+				<xen:include template="inline_mod_controls_thread" />
+			</xen:if>
+		</div>
+	</xen:if>
+
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>
+
+<h3 id="DiscussionListOptionsHandle"><a href="#">{xen:phrase thread_display_options}</a></h3>
+
+<form action="{xen:link 'forums', $forum}" method="post" class="DiscussionListOptions secondaryContent">
+
+	<xen:hook name="thread_list_options">
+	<div class="controlGroup">
+		<label for="ctrl_order">{xen:phrase sort_threads_by}:</label>
+		<select name="order" id="ctrl_order" class="textCtrl">
+			<option value="last_post_date" {xen:selected "{$order} == 'last_post_date'"}>{xen:phrase last_message_time}</option>
+			<option value="post_date" {xen:selected "{$order} == 'post_date'"}>{xen:phrase thread_creation_time}</option>
+			<option value="title" {xen:selected "{$order} == 'title'"}>{xen:phrase title_alphabetical}</option>
+			<option value="reply_count" {xen:selected "{$order} == 'reply_count'"}>{xen:phrase number_of_replies}</option>
+			<option value="view_count" {xen:selected "{$order} == 'view_count'"}>{xen:phrase number_of_views}</option>
+			<option value="first_post_likes" {xen:selected "{$order} == 'first_post_likes'"}>{xen:phrase first_message_likes}</option>
+		</select>
+	</div>
+
+	<div class="controlGroup">
+		<label for="ctrl_direction">{xen:phrase order_threads_in}:</label>
+		<select name="direction" id="ctrl_direction" class="textCtrl">
+			<option value="desc" {xen:selected "{$orderDirection} == 'desc'"}>{xen:phrase descending_order}</option>
+			<option value="asc" {xen:selected "{$orderDirection} == 'asc'"}>{xen:phrase ascending_order}</option>
+		</select>
+	</div>
+
+	<div class="buttonGroup">
+		<input type="submit" class="button primary" value="{xen:phrase set_options}" />
+		<input type="reset" class="button" value="{xen:phrase cancel}" />
+	</div>
+	</xen:hook>
+
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>
+
+<xen:include template="preview_tooltip" />
+
+<xen:include template="sfKomuKuJVC_Footer" />]]></template>
+    <template title="sfdir_new_view" version_id="27" version_string="1.1.7.4"><![CDATA[<xen:title>New Directory Listings {xen:helper pagenumber, $page}</xen:title>
+
+
+<xen:navigation>
+	<xen:breadcrumb source="$nodeBreadCrumbs" />
+</xen:navigation>
+
+<xen:container var="$head.rss">
+	<link rel="alternate" type="application/rss+xml" title="{xen:phrase rss_feed_for_x, 'title={$forum.title}'}" href="{xen:link forums/index.rss, $forum}" /></xen:container>
+
+<xen:container var="$quickNavSelected">node-{$forum.node_id}</xen:container>
+
+
+
+<xen:if is="{$showPostedNotice}">
+	<div class="importantMessage">{xen:phrase message_submitted_displayed_pending_approval}</div>
+</xen:if>
+
+
+
+<xen:hook name="forum_view_pagenav_before" params="{xen:array 'forum={$forum}'}" />
+
+<xen:include template="ad_forum_view_above_thread_list" />
+
+<div class="pageNavLinkGroup">
+
+	<div class="linkGroup SelectionCountContainer">
+		<xen:if is="{$visitor.user_id}">
+			<a href="{xen:link 'forums/mark-read', $forum, 'date={$serverTime}'}" class="OverlayTrigger">{xen:phrase mark_this_forum_read}</a>
+		</xen:if>
+		<xen:if is="{$canSearch}">
+			<div class="Popup">
+				<a href="{xen:link search, '', 'type=post', 'node_id={$forum.node_id}'}" method="post" rel="Menu">{xen:phrase search_this_forum}</a>
+				
+				<xen:comment>
+				<div class="Menu JsOnly">
+					<form action="{xen:link search/search}" method="post" class="xenForm">
+						<div class="primaryContent menuHeader">
+							<h3>{xen:phrase search_this_forum}</h3>
+						</div>
+						<dl class="ctrlUnit fullWidth">
+							<dt></dt>
+							<dd><input type="search" name="keywords" results="0" class="textCtrl" placeholder="{xen:phrase search}..." /></dd>
+						</dl>
+						<dl class="ctrlUnit fullWidth secondaryContent">
+							<dt></dt>
+							<dd><ul>
+								<li><label><input type="checkbox" name="title_only" value="1" /> {xen:phrase search_titles_only}</label></li>
+								<li><label><input type="checkbox" name="group_discussion" value="1" /> {xen:phrase display_results_as_threads}</label></li>
+							</ul></dd>
+						</dl>
+						<dl class="ctrlUnit fullWidth submitUnit">
+							<dt></dt>
+							<dd><input type="submit" class="button" value="{xen:phrase find_now}" /></dd>
+						</dl>
+						<a href="{xen:link search, '', 'type=post', 'node_id={$forum.node_id}'}" class="linkButton">{xen:phrase advanced_search}</a>
+					
+						<input type="hidden" name="type" value="post" />
+						<input type="hidden" name="child_nodes" value="1" />
+						<input type="hidden" name="nodes[]" value="{$forum.node_id}" />
+						<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+					</form>
+				</div>
+				</xen:comment>
+			
+				<div class="Menu JsOnly formPopup">
+					<form action="{xen:link search/search}" method="post">
+						<div class="primaryControls">
+							<input type="search" name="keywords" value="" class="textCtrl" placeholder="{xen:phrase search}..." results="0" title="{xen:phrase enter_your_search_and_hit_enter}" />
+						</div>
+						
+						<div class="secondaryControls">
+							<div class="controlsWrapper">
+							
+								<dl class="ctrlUnit fullWidth">
+									<dt></dt>
+									<dd><ul>
+										<li><label><input type="checkbox" name="title_only" value="1" /> {xen:phrase search_titles_only}</label></li>
+										<li><label><input type="checkbox" name="group_discussion" value="1" /> {xen:phrase display_results_as_threads}</label></li>
+									</ul></dd>
+								</dl>
+												
+							</div>
+								
+							<dl class="ctrlUnit submitUnit fullWidth">
+								<dt></dt>
+								<dd><input type="submit" value="{xen:phrase find_now}" class="button primary"></dd>
+							</dl>
+							
+							<a href="{xen:link search, '', 'type=post', 'node_id={$forum.node_id}'}" class="advSearchLink">{xen:phrase advanced_search}...</a>
+						</div>
+					
+						<input type="hidden" name="type" value="post" />
+						<input type="hidden" name="child_nodes" value="1" />
+						<input type="hidden" name="nodes[]" value="{$forum.node_id}" />
+						<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+					</form>
+				</div>
+
+
+
+			</div>
+		</xen:if>
+	</div>
+
+	<xen:pagenav link="directory/new/" linkdata="{$forum}" linkparams="{$pageNavParams}" page="{$page}" perpage="{$threadsPerPage}" total="{$totalThreads}" />
+
+</div>
+
+
+
+<div class="discussionList section sectionMain">
+	<xen:include template="sfdir_thread_list" /> 
+</div>
+	
+<div class="pageNavLinkGroup">
+
+
+	<xen:pagenav link="directory/new/" linkdata="{$forum}" linkparams="{$pageNavParams}" page="{$page}" perpage="{$threadsPerPage}" total="{$totalThreads}" />
+</div>]]></template>
+    <template title="sfdir_post" version_id="17" version_string="1.1.1"><![CDATA[<xen:include template="sfdir_message">
+
+	<xen:map from="$post" to="$message" />
+
+	<xen:set var="$messageId">post-{$post.post_id}</xen:set>
+	
+	<xen:set var="$likesUrl">{xen:link reviewposts/likes, $post}</xen:set>
+	
+	<xen:set var="$messageContentAfterTemplate"><xen:if is="{$post.attachments}"><xen:include template="attached_files" /></xen:if></xen:set>
+	
+	<xen:set var="$messageAfterTemplate">
+				
+		<div class="messageMeta">
+			
+			<div class="privateControls">
+				<xen:if is="{$post.canInlineMod}"><input type="checkbox" name="posts[]" value="{$post.post_id}" class="InlineModCheck item" data-target="#post-{$post.post_id}" title="{xen:phrase select_this_post_by_x, 'name={$post.username}'}" /></xen:if>
+				<span class="item muted">
+					<xen:username user="$post" class="author" />,
+					<a href="{xen:link 'full:reviews'}{$thread.url}/#{$post.post_id}" title="{xen:phrase permalink}" class="datePermalink"><xen:datetime time="$post.post_date" /></a>
+				</span>
+				<xen:hook name="post_private_controls" params="{xen:array 'post={$post}'}">
+				<xen:if is="{$post.canEdit}">
+					<a href="{xen:link reviewposts/edit, $post}" class="item control edit {xen:if $xenOptions.messageInlineEdit, OverlayTrigger}"
+						data-href="{xen:link reviewposts/edit-inline, $post}" data-overlayOptions="{&quot;fixed&quot;:false}"
+						data-messageSelector="#post-{$post.post_id}"><span></span>{xen:phrase edit}</a>
+					<xen:require js="js/xenforo/discussion.js" />
+				</xen:if>
+				<xen:if is="{$post.canDelete}"><a href="{xen:link reviewposts/delete, $post}" class="item control delete OverlayTrigger"><span></span>{xen:phrase delete}</a></xen:if>
+				<xen:if is="{$post.canCleanSpam}"><a href="{xen:link spam-cleaner, $post}" class="item control deleteSpam OverlayTrigger"><span></span>{xen:phrase spam}</a></xen:if>
+				<xen:if is="{$canViewIps} AND {$post.ip_id}"><a href="{xen:link reviewposts/ip, $post}" class="item control ip OverlayTrigger"><span></span>{xen:phrase ip}</a></xen:if>
+				
+				<xen:if is="{$post.canWarn}">
+					<a href="{xen:link members/warn, $post, 'content_type=post', 'content_id={$post.post_id}'}" class="item control warn"><span></span>{xen:phrase warn}</a>
+				<xen:elseif is="{$post.warning_id} && {$canViewWarnings}" />
+					<a href="{xen:link warnings, $post}" class="OverlayTrigger item control viewWarning"><span></span>{xen:phrase view_warning}</a>
+				<xen:elseif is="{$post.canReport}" />
+					<a href="{xen:link reviewposts/report, $post}" class="OverlayTrigger item control report" data-cacheOverlay="false"><span></span>{xen:phrase report}</a>
+				</xen:if>
+				
+				</xen:hook>
+			</div>
+			
+			<div class="publicControls">
+				<a href="{xen:link 'reviews'}{$thread.url}/#post-{$post.post_id}" title="{xen:phrase permalink}" class="item muted postNumber hashPermalink OverlayTrigger" data-href="{xen:link 'reviewposts'}{$post.post_id}/permalink">#{xen:calc '{$post.position} + 1'}</a>
+				<xen:hook name="post_public_controls" params="{xen:array 'post={$post}'}">
+				<xen:if is="{$post.canLike}">
+					<a href="{xen:link reviewposts/like, $post}" class="LikeLink item control {xen:if $post.like_date, unlike, like}" data-container="#likes-post-{$post.post_id}"><span></span><span class="LikeLabel">{xen:if $post.like_date, {xen:phrase unlike}, {xen:phrase like}}</span></a>
+				</xen:if>
+				<xen:if is="{$canReply}">
+					<a href="{xen:link threads/reply, $thread, 'quote={$post.post_id}'}" data-postUrl="{xen:link reviewposts/quote, $post}" class="ReplyQuote item control reply" title="{xen:phrase reply_quoting_this_message}"><span></span>{xen:phrase reply}</a>
+				</xen:if>
+				</xen:hook>
+			</div>
+		</div>
+	</xen:set>
+	
+</xen:include>]]></template>
+    <template title="sfdir_recent_review" version_id="23" version_string="1.1.6.3"><![CDATA[<xen:require css="sfdir_recent_review.css" />
+<li class="sfdirRecentReview">
+	<xen:avatar user="$recentReview" size="s" img="true" />	
+	<div class="sfdirRecentReviewInfo">
+		<div class="sfdirRecentReviewTitle"><a href="{xen:link 'reviews', $recentReview}">{xen:helper snippet, $recentReview.title, 32}</a></div>	
+		<div>
+			<span class="sfdirRecentReviewtUser"><xen:username user="$recentReview" />,</span>
+			<span class="sfdirRecentReviewLink"><a href="{xen:link reviews, $recentReview}"><xen:datetime time="$recentReview.post_date" /></a></span>
+		</div>
+	</div>
+</li>]]></template>
+    <template title="sfdir_recent_review.css" version_id="23" version_string="1.1.6.3"><![CDATA[.sfdirRecentReviewTitle
+{
+	min-height: 24px;
+	font-size: 9pt;
+}
+
+.sfdirRecentReviewLink a
+{
+	color: {xen:property mutedTextColor};
+}
+	
+.sfdirRecentReviewUser a
+{
+	color: {xen:property dimmedTextColor};
+}
+
+.sfdirRecentReview
+{
+	padding-top: 4px;
+	min-height: 42px;
+	border-bottom: 1px solid {xen:property primaryLighterStill};
+}
+
+.sfdirRecentReview:first-child
+{
+	padding-top: 0;
+}
+	
+.sfdirRecentReview .avatar img
+{
+	float: left;
+	width: 32px;
+	height: 32px;
+}
+
+.sfdirRecentReviewInfo
+{
+	margin-left: 42px;
+}
+
+
+	
+]]></template>
+    <template title="sfdir_thread_list" version_id="27" version_string="1.1.7.4"><![CDATA[<xen:require css="discussion_list.css" />
+<xen:require js="js/xenforo/discussion_list.js" />
+<form action="{xen:link inline-mod/thread/switch}" method="post"
+	class="DiscussionList InlineModForm"
+	data-cookieName="threads"
+	data-controls="#InlineModControls"
+	data-imodOptions="#ModerationSelect option">
+
+	<dl class="sectionHeaders">
+		<dt class="posterAvatar"><a><span>{xen:phrase sort_by}:</span></a></dt>
+		<dd class="main">
+			<a href="{xen:link forums, $forum, '_params={$orderParams.title}'}" class="title"><span>{xen:phrase title}{xen:helper sortArrow, $order, $orderDirection, title}</span></a>
+			<a href="{xen:link forums, $forum, '_params={$orderParams.post_date}'}" class="postDate"><span>{xen:phrase start_date}{xen:helper sortArrow, $order, $orderDirection, post_date}</span></a>		
+		</dd>
+		<dd class="stats">
+			<a href="{xen:link forums, $forum, '_params={$orderParams.reply_count}'}" class="major"><span>{xen:phrase replies}{xen:helper sortArrow, $order, $orderDirection, reply_count}</span></a>
+			<a href="{xen:link forums, $forum, '_params={$orderParams.view_count}'}" class="minor"><span>{xen:phrase views}{xen:helper sortArrow, $order, $orderDirection, view_count}</span></a>		
+		</dd>
+		<dd class="lastPost"><a href="{xen:link forums, $forum, '_params={$orderParams.last_post_date}'}"><span>{xen:phrase last_message}{xen:helper sortArrow, $order, $orderDirection, last_post_date}</span></a></dd>
+	</dl>
+
+	<ol class="discussionListItems">
+	<xen:if is="{$stickyThreads} OR {$threads}">
+		<xen:set var="$showLastPageNumbers">1</xen:set>
+	
+		<xen:hook name="thread_list_stickies">
+		<xen:foreach loop="$stickyThreads" value="$thread">
+			<xen:include template="sfdirectory_list_item" />
+		</xen:foreach>
+		</xen:hook>
+		
+		<xen:include template="ad_thread_list_below_stickies" />
+		
+		<xen:hook name="thread_list_threads">
+		<xen:foreach loop="$threads" value="$thread">
+			<xen:include template="sfdirectory_list_item" />
+		</xen:foreach>
+		</xen:hook>
+		
+		<xen:edithint template="thread_list_item_edit" />
+	<xen:else />
+		<li class="primaryContent">{xen:phrase there_no_threads_to_display}</li>
+	</xen:if>
+	</ol>
+
+	<xen:if is="{$totalThreads} OR {$inlineModOptions}">
+		<div class="sectionFooter InlineMod SelectionCountContainer">
+			<xen:if is="{$totalThreads}"><span class="contentSummary">{xen:phrase showing_threads_x_to_y_of_z, 'start={xen:number $threadStartOffset}', 'end={xen:number $threadEndOffset}', 'total={xen:number $totalThreads}'}</span></xen:if>
+
+
+
+		</div>
+	</xen:if>
+
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>
+
+<h3 id="DiscussionListOptionsHandle"><a href="#">{xen:phrase thread_display_options}</a></h3>
+
+<form action="{xen:link 'forums', $forum}" method="post" class="DiscussionListOptions secondaryContent">
+
+	<xen:hook name="thread_list_options">
+	<div class="controlGroup">
+		<label for="ctrl_order">{xen:phrase sort_threads_by}:</label>
+		<select name="order" id="ctrl_order" class="textCtrl">
+			<option value="last_post_date" {xen:selected "{$order} == 'last_post_date'"}>{xen:phrase last_message_time}</option>
+			<option value="post_date" {xen:selected "{$order} == 'post_date'"}>{xen:phrase thread_creation_time}</option>
+			<option value="title" {xen:selected "{$order} == 'title'"}>{xen:phrase title_alphabetical}</option>
+			<option value="reply_count" {xen:selected "{$order} == 'reply_count'"}>{xen:phrase number_of_replies}</option>
+			<option value="view_count" {xen:selected "{$order} == 'view_count'"}>{xen:phrase number_of_views}</option>
+			<option value="first_post_likes" {xen:selected "{$order} == 'first_post_likes'"}>{xen:phrase first_message_likes}</option>
+		</select>
+	</div>
+
+	<div class="controlGroup">
+		<label for="ctrl_direction">{xen:phrase order_threads_in}:</label>
+		<select name="direction" id="ctrl_direction" class="textCtrl">
+			<option value="desc" {xen:selected "{$orderDirection} == 'desc'"}>{xen:phrase descending_order}</option>
+			<option value="asc" {xen:selected "{$orderDirection} == 'asc'"}>{xen:phrase ascending_order}</option>
+		</select>
+	</div>
+
+	<div class="buttonGroup">
+		<input type="submit" class="button primary" value="{xen:phrase set_options}" />
+		<input type="reset" class="button" value="{xen:phrase cancel}" />
+	</div>
+	</xen:hook>
+
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>
+
+<xen:include template="preview_tooltip" />
+
+<xen:include template="sfKomuKuJVC_Footer" />]]></template>
+    <template title="sfdir_unclaimable" version_id="18" version_string="1.1.2"><![CDATA[<xen:title>Set Listing to Claimable</xen:title>
+
+
+
+<form class="xenForm formOverlay AutoValidator" 
+	data-redirect="on" 
+action="{xen:link 'reviews/'}{$threadURL}/UnsetClaimable"
+
+	method="post" >
+<br />
+Unset the claimable status of this listing? <br />
+<br />
+Unsetting the claimable status of this listing means other users can no longer claim it!
+<br />	
+<br />
+
+
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>	
+		<dd>
+			<input type="submit" class="button primary" accesskey="s" value="{xen:phrase unset_claimable}"> 
+			<input type="reset" class="button OverlayCloser" value="Cancel">
+		</dd>		
+	</dl>
+	<input type="hidden" name="threadURL" value="{$threadURL}" />
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+	<xen:include template="sfKomuKuJVC_Footer" />	
+	
+</form>]]></template>
+    <template title="sfdir_update" version_id="19" version_string="1.1.3"><![CDATA[<xen:title>{xen:phrase update_listing}</xen:title>
+
+
+<form action="{xen:link 'reviews'}{$threadURL}/DirUpdate" method="post"
+	class="xenForm formOverlay AutoValidator"
+	data-redirect="on"	
+>
+
+
+
+	
+	<fieldset>	
+
+<dl class="ctrlUnit">	
+	<xen:if is="{$allowTelephone}">		
+		<dt><label for="ctrl_telephone">{xen:phrase telephone}:</label></dt>
+		<dd><input type="text" name="telephone" class="textCtrl" maxlength="100" style="display: block;width: 220px;" value="{$directorylisting.telephone}" /></dd>
+	</xen:if>
+
+	<xen:if is="{$allowLocation}">		
+		<dt><label for="ctrl_address_line_1">{xen:phrase address_line_1}:</label></dt>
+		<dd><input type="text" name="address_line_1" class="textCtrl" style="display: block;width: 220px;" maxlength="34" value="{$directorylisting.address_line_1}" /></dd>
+
+		<dt><label for="ctrl_address_line_2">{xen:phrase address_line_2}:</label></dt>
+		<dd><input type="text" name="address_line_2" class="textCtrl" maxlength="34"  style="display: block;width: 220px;" value="{$directorylisting.address_line_2}" /></dd>
+
+		<dt><label for="ctrl_town_city">{xen:phrase town_city}:</label></dt>
+		<dd><input type="text" name="town_city" class="textCtrl" maxlength="34" style="display: block;width: 220px;" value="{$directorylisting.town_city}" /></dd>
+
+		<dt><label for="ctrl_postcode">{xen:phrase postcode}:</label></dt>
+		<dd><input type="text" name="postcode" class="textCtrl" maxlength="34" style="display: block;width: 220px;" value="{$directorylisting.postcode}" /></dd>
+	</xen:if>
+</dl>
+
+</fieldset>
+<fieldset>
+<dl class="ctrlUnit">	
+
+	<dt><label for="ctrl_website_url">{xen:phrase website_url}:</label></dt>
+	<dd>
+	<input type="text" name="website_url"  style="float: left;width: 190px;margin-right: 10px;" class="textCtrl" maxlength="120" value="{$directorylisting.website_url}" />
+	<input type="text" name="website_anchor_text" style="float: left;width: 120px;" class="textCtrl" maxlength="34" value="{$directorylisting.website_anchor_text}" />
+	</dd>
+
+	<xen:if is="{$allowDeepLinks}">	
+		<dt><label for="ctrl_deeplink1_url">{xen:phrase deeplink1_url}:</label></dt>
+		<dd>
+		<input type="text" name="deeplink1_url"  style="float: left;width: 190px;margin-right: 10px;" class="textCtrl" maxlength="190" value="{$directorylisting.deeplink1_url}" />
+		<input type="text" name="deeplink1_anchor_text" style="float: left;width: 120px;" class="textCtrl" maxlength="34" value="{$directorylisting.deeplink1_anchor_text}" />
+		</dd>
+
+		<dt><label for="ctrl_deeplink2_url">{xen:phrase deeplink2_url}:</label></dt>
+		<dd>
+		<input type="text" name="deeplink2_url"  style="float: left;width: 190px;margin-right: 10px;" class="textCtrl" maxlength="190" value="{$directorylisting.deeplink2_url}" />
+		<input type="text" name="deeplink2_anchor_text" style="float: left;width: 120px;" class="textCtrl" maxlength="34" value="{$directorylisting.deeplink2_anchor_text}" />		
+		</dd>
+	
+		<dt><label for="ctrl_deeplink3_url">{xen:phrase deeplink3_url}:</label></dt>
+		<dd>
+		<input type="text" name="deeplink3_url"  style="float: left;width: 190px;margin-right: 10px;" class="textCtrl" maxlength="190" value="{$directorylisting.deeplink3_url}" />
+		<input type="text" name="deeplink3_anchor_text" style="float: left;width: 120px;" class="textCtrl" maxlength="34" value="{$directorylisting.deeplink3_anchor_text}"/>
+		</dd>
+
+	</xen:if>
+
+</dl>
+
+		<xen:hook name="thread_create_fields_main" params="{xen:array 'forum={$forum}'}" />
+
+
+</fieldset>
+
+
+<xen:if is="{$displayCustomA}">
+<fieldset>
+	<dl class="ctrlUnit">
+		<xen:if is="{$customFieldA1}">
+			<dt><label for="customFieldA1">{$customFieldA1}:</label></dt>
+			<dd><input type="text" name="customfielda1" class="textCtrl" maxlength="100" style="display: block;width: 220px;" value="{$directorylisting.customfielda1}" /></dd>
+		</xen:if>
+		<xen:if is="{$customFieldA2}">
+			<dt><label for="customFieldA2">{$customFieldA2}:</label></dt>
+			<dd><input type="text" name="customfielda2" class="textCtrl" maxlength="100" style="display: block;width: 220px;" value="{$directorylisting.customfielda2}" /></dd>
+		</xen:if>
+		<xen:if is="{$customFieldA3}">
+			<dt><label for="customFieldA3">{$customFieldA3}:</label></dt>
+			<dd><input type="text" name="customfielda3" class="textCtrl" maxlength="100" style="display: block;width: 220px;" value="{$directorylisting.customfielda3}" /></dd>
+		</xen:if>
+		<xen:if is="{$customFieldA4}">
+			<dt><label for="customFieldA4">{$customFieldA4}:</label></dt>
+			<dd><input type="text" name="customfielda4" class="textCtrl" maxlength="100" style="display: block;width: 220px;" value="{$directorylisting.customfielda4}" /></dd>
+		</xen:if>
+			
+	</dl>
+</fieldset>
+</xen:if>
+
+<xen:if is="{$displayCustomB}">
+<fieldset>
+	<dl class="ctrlUnit">
+		<xen:if is="{$customFieldB1}">
+			<dt><label for="customFieldB1">{$customFieldB1}:</label></dt>
+			<dd><input type="text" name="customfieldb1" class="textCtrl" maxlength="100" style="display: block;width: 220px;" value="{$directorylisting.customfieldb1}" /></dd>
+		</xen:if>
+		<xen:if is="{$customFieldB2}">
+			<dt><label for="customFieldB2">{$customFieldB2}:</label></dt>
+			<dd><input type="text" name="customfieldb2" class="textCtrl" maxlength="100" style="display: block;width: 220px;" value="{$directorylisting.customfieldb2}" /></dd>
+		</xen:if>
+		<xen:if is="{$customFieldB3}">
+			<dt><label for="customFieldB3">{$customFieldB3}:</label></dt>
+			<dd><input type="text" name="customfieldb3" class="textCtrl" maxlength="100" style="display: block;width: 220px;" value="{$directorylisting.customfieldb3}" /></dd>
+		</xen:if>
+		<xen:if is="{$customFieldB4}">
+			<dt><label for="customFieldB4">{$customFieldB4}:</label></dt>
+			<dd><input type="text" name="customfieldb4" class="textCtrl" maxlength="100" style="display: block;width: 220px;" value="{$directorylisting.customfieldb4}" /></dd>
+		</xen:if>			
+	</dl>
+</fieldset>
+</xen:if>
+
+
+
+
+
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd>
+			<input type="submit" value="{xen:phrase update_listing}" class="button primary" />
+		</dd>
+	</dl>
+        <input type="hidden" name="threadURL" value="{$threadURL}" />
+
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>
+]]></template>
+    <template title="sfreviewpost_edit" version_id="17" version_string="1.1.1"><![CDATA[<xen:title>{xen:phrase edit_post_by_x, 'name={$post.username}'}</xen:title>
+
+<xen:navigation>
+	<xen:breadcrumb source="$nodeBreadCrumbs" />
+	<xen:breadcrumb href="{xen:link full:posts, $post}">{xen:helper threadPrefix, $thread}{$thread.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:container var="$bodyClasses">{xen:helper nodeClasses, $nodeBreadCrumbs, $forum}</xen:container>
+<xen:container var="$searchBar.thread"><xen:include template="search_bar_thread_only" /></xen:container>
+<xen:container var="$searchBar.forum"><xen:include template="search_bar_forum_only" /></xen:container>
+
+<form action="{xen:link 'reviewposts/save', $post}" method="post" class="xenForm Preview AutoValidator"
+	data-previewUrl="{xen:link 'posts/edit/preview', $post}" data-redirect="on">
+
+	<fieldset>
+		<dl class="ctrlUnit fullWidth surplusLabel">
+			<dt><label for="ctrl_message">{xen:phrase message}:</label></dt>
+			<dd>{xen:raw $editorTemplate}</dd>
+		</dl>
+	</fieldset>
+
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd>
+			<input type="submit" value="{xen:phrase save_changes}" accesskey="s" class="button primary" />
+			<xen:include template="attachment_upload_button" />
+			<input type="button" value="{xen:phrase preview}..." class="button PreviewButton JsOnly" />
+		</dd>
+	</dl>
+
+	<xen:if is="{$attachmentParams}">
+		<dl class="ctrlUnit AttachedFilesUnit">
+			<dt><label for="ctrl_uploader">{xen:phrase attached_files}:</label></dt>
+			<dd><xen:include template="attachment_editor" /></dd>
+		</dl>
+	</xen:if>
+
+	<xen:if is="{$visitor.user_id}">
+		<fieldset>
+			<dl class="ctrlUnit">
+				<dt>{xen:phrase options}:</dt>
+				<dd><ul>
+					<li><xen:include template="helper_thread_watch_input" /></li>
+				</ul></dd>
+			</dl>
+		</fieldset>
+	</xen:if>
+
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd>
+			<input type="submit" value="{xen:phrase save_changes}" accesskey="s" class="button primary" />
+			<input type="button" value="{xen:phrase preview}..." class="button PreviewButton JsOnly" />
+		</dd>
+	</dl>
+
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>]]></template>
+    <template title="sfreview_delete" version_id="12" version_string="1.0.12"><![CDATA[<xen:title>{xen:phrase delete_thread}: {xen:helper threadPrefix, $thread, escaped}{$thread.title}</xen:title>
+<xen:h1>{xen:phrase delete_thread}: {xen:helper threadPrefix, $thread}{$thread.title}</xen:h1>
+
+<xen:navigation>
+	<xen:breadcrumb source="$nodeBreadCrumbs" />
+	<xen:breadcrumb href="{xen:link full:threads, $thread}">{xen:helper threadPrefix, $thread}{$thread.title}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:container var="$bodyClasses">{xen:helper nodeClasses, $nodeBreadCrumbs, $forum}</xen:container>
+<xen:container var="$searchBar.thread"><xen:include template="search_bar_thread_only" /></xen:container>
+<xen:container var="$searchBar.forum"><xen:include template="search_bar_forum_only" /></xen:container>
+
+<form action="{xen:link 'reviews/'}{$thread.url}/delete" method="post" class="xenForm formOverlay">
+
+	<xen:include template="helper_deletion_type_unit" />
+
+	<dl class="ctrlUnit submitUnit">
+		<dt></dt>
+		<dd><input type="submit" value="{xen:phrase delete_thread}" class="button primary" /></dd>
+	</dl>
+
+	<input type="hidden" name="_xfConfirm" value="1" />
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+</form>]]></template>
+    <template title="sfreview_view" version_id="34" version_string="1.2.0.2"><![CDATA[<xen:title>{xen:helper threadPrefix, $thread, escaped} {$thread.title}{xen:helper pagenumber, $page}</xen:title>
+<xen:h1>{xen:helper threadPrefix, $thread} {$thread.title}</xen:h1>
+
+
+<xen:description>
+	{xen:phrase discussion_in_x_started_by_y_date_z,
+		'forum=<a href="{xen:link forums, $forum}">{$forum.title}</a>',
+		'name={xen:helper username, $thread}',
+		'date=<a href="{xen:link threads, $thread}">{xen:datetime $thread.post_date, html}</a>'}
+</xen:description>
+
+
+<xen:navigation>
+	<xen:breadcrumb source="$breadCrumbs" />
+</xen:navigation>
+
+
+
+<div class="sectionMain">
+<xen:include template="sfdirectory_map_view" />
+</div>
+
+<xen:container var="$head.canonical">
+
+
+
+	<link rel="canonical" href="{xen:link 'full:reviews'}{$thread.url}/<xen:if is="{$page} > 1">&page={$page}</xen:if>" /></xen:container>
+<xen:container var="$head.description">
+	<meta name="description" content="{xen:helper snippet, $firstPost.message, 155}" /></xen:container>
+<xen:container var="$head.openGraph"><xen:include template="open_graph_meta">
+		<xen:set var="$url">{xen:link 'canonical:threads', $thread}</xen:set>
+		<xen:set var="$title">{$thread.title}</xen:set>
+		<xen:set var="$avatar">{xen:helper avatar, $thread, m, 0, 1}</xen:set>
+	</xen:include></xen:container>
+
+<xen:if is="{$canReply}">
+	<xen:comment><xen:topctrl>
+		<a href="{xen:link 'threads/reply', $thread}" class="callToAction"><span>{xen:phrase reply_to_thread}</span></a>
+	</xen:topctrl></xen:comment>
+</xen:if>
+
+<xen:require css="thread_view.css" />
+
+<xen:edithint template="sfdir_message" />
+
+
+
+
+<xen:set var="$threadStatusHtml">
+	<xen:if hascontent="true">
+		<dl class="threadAlerts secondaryContent">
+			<dt>{xen:phrase thread_status}:</dt>
+			<xen:contentcheck>
+				<xen:if is="{$thread.discussion_state} == 'deleted'">
+					<dd>{xen:phrase removed_from_public_view}</dd>
+				<xen:elseif is="{$thread.discussion_state} == 'moderated'" />
+					<dd>{xen:phrase awaiting_moderation_before_being_displayed_publicly}</dd>
+				</xen:if>
+	
+				<xen:if is="!{$thread.discussion_open}">
+					<dd>{xen:phrase not_open_for_further_replies}</dd>
+				</xen:if>
+			</xen:contentcheck>
+		</dl>
+	</xen:if>
+</xen:set>
+{xen:raw $threadStatusHtml}
+
+<xen:hook name="thread_view_pagenav_before" params="{xen:array 'thread={$thread}'}" />
+
+
+
+<div class="pageNavLinkGroup">
+
+
+	<div class="linkGroup SelectionCountContainer">
+
+		<xen:if is="{$thread.canEditThread} or {$firstPost.canEdit}">
+			<div class="Popup">
+				<a rel="Menu">{xen:phrase listing_tools}</a>
+				<div class="Menu">
+					<div class="primaryContent menuHeader"><h3>{xen:phrase listing_tools}</h3></div>
+					<ul class="secondaryContent blockLinksList">
+
+						<xen:if is="{$canEditListingDetails}">
+							<li>
+								<a href="{xen:link reviews}{$thread.url}/dir-update-dialogue"
+									class="OverlayTrigger"
+									data-overlayOptions="{&quot;fixed&quot;:false}">{xen:phrase edit_listing_details}
+								</a>	
+							</li>	
+						</xen:if>
+
+						<xen:if is="{$allowClaimable}">	
+							<xen:if is="({$is_claimable} == 0) && {$perms.canSetClaimable}">
+							<li>
+								<a href="{xen:link reviews}{$thread.url}/claimable-dialogue"
+									class="OverlayTrigger"
+									data-overlayOptions="{&quot;fixed&quot;:false}">{xen:phrase set_listing_to_claimable}
+								</a>
+							</li>		
+							</xen:if>
+							<xen:if is="{$is_claimable} == 1">
+							<li>
+								<a href="{xen:link reviews}{$thread.url}/unclaimable-dialogue"
+									class="OverlayTrigger"
+									data-overlayOptions="{&quot;fixed&quot;:false}">
+									{xen:phrase unset_claimable}
+								</a>
+							</li>
+							</xen:if>	
+						</xen:if>
+						<xen:if is="({$is_claimable} == 1) && ({$perms.canClaimListing})">
+							<li>
+								<a href="{xen:link reviews}{$thread.url}/claim-listing-dialogue 
+									class="OverlayTrigger"
+									data-overlayOptions="{&quot;fixed&quot;:false}">
+									{xen:phrase claim_listing}
+								</a>
+							</li>
+						</xen:if>
+					</ul>
+				</div>
+			</div>
+		</xen:if>
+
+
+		<xen:if hascontent="true">
+			<div class="Popup">
+				<a rel="Menu">{xen:phrase thread_tools}</a>
+				<div class="Menu">
+					<div class="primaryContent menuHeader"><h3>{xen:phrase thread_tools}</h3></div>
+					<ul class="secondaryContent blockLinksList">
+						<xen:contentcheck>
+							<xen:if is="{$canEditThread}">
+								<li><a href="{xen:link 'threads/edit', $thread}" class="OverlayTrigger">{xen:phrase edit_thread}</a></li>
+							</xen:if>
+							<xen:if is="{$canDeleteThread}">
+								<li><a href="{xen:link 'reviews'}{$thread.url}/delete" class="OverlayTrigger">{xen:phrase delete_thread}</a></li>
+							</xen:if>
+							<xen:if is="{$canMoveThread}">
+								<li><a href="{xen:link 'threads/move', $thread}" class="OverlayTrigger">{xen:phrase move_thread}</a></li>
+							</xen:if>
+							<xen:if is="{$deletedPosts}">
+								<li><a href="{xen:link threads/show-posts, $thread, 'page={$page}'}" class="MessageLoader" data-messageSelector="#messageList .message.deleted.placeholder">{xen:phrase show_deleted_posts}</a></li>
+							</xen:if>
+						</xen:contentcheck>
+					</ul>
+					<xen:if is="{$thread.canInlineMod}">
+					<form action="{xen:link inline-mod/thread/switch}" method="post" class="InlineModForm sectionFooter" id="threadViewThreadCheck"
+						data-cookieName="threads">
+						<label><input type="checkbox" name="threads[]" value="{$thread.thread_id}" class="InlineModCheck" /> {xen:phrase select_for_thread_moderation}</label>
+						<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+					</form>
+					</xen:if>
+				</div>
+			</div>
+		</xen:if>
+		<xen:if is="{$canWatchThread}">
+			<a href="{xen:link 'threads/watch-confirm', $thread}" class="OverlayTrigger" data-cacheOverlay="false">{xen:if $thread.thread_is_watched, '{xen:phrase unwatch_thread}', '{xen:phrase watch_thread}'}</a>
+		</xen:if>
+	</div>
+
+
+	<xen:pagenav link="threads" linkdata="{$thread}"
+				page="{$page}" perpage="{$postsPerPage}" total="{$totalPosts}"
+				unreadlink="{$unreadLink}"
+			/>
+</div>
+
+<xen:include template="ad_thread_view_above_messages" />
+
+<xen:hook name="thread_view_form_before" params="{xen:array 'thread={$thread}'}" />
+
+<form action="{xen:link 'inline-mod/post/switch'}" method="post"
+	class="InlineModForm section"
+	data-cookieName="posts"
+	data-controls="#InlineModControls"
+	data-imodOptions="#ModerationSelect option">
+
+	<ol class="messageList" id="messageList">
+		<xen:foreach loop="$posts" value="$post">
+			<xen:if is="{$post.message_state} == 'deleted'">
+				<xen:include template="post_deleted_placeholder" />
+			<xen:else />
+				<xen:include template="sfdir_post" />
+			</xen:if>
+		</xen:foreach>
+		<xen:edithint template="attached_files" />
+	</ol>
+
+	<xen:if is="{$inlineModOptions}">
+		<div class="sectionFooter InlineMod Hide">
+			<label for="ModeraftionSelect">{xen:phrase perform_action_with_selected_posts}...</label>
+
+			<xen:include template="inline_mod_controls">
+				<xen:set var="$text">{xen:phrase post_moderation}</xen:set>
+				<xen:set var="$options">
+					
+					<xen:if is="{$inlineModOptions.undelete}"><option value="undelete">{xen:phrase undelete_posts}</option></xen:if>
+					<xen:if is="{$inlineModOptions.approve}"><option value="approve">{xen:phrase approve_posts}</option></xen:if>
+					<xen:if is="{$inlineModOptions.unapprove}"><option value="unapprove">{xen:phrase unapprove_posts}</option></xen:if>
+					<xen:if is="{$inlineModOptions.move}"><option value="move">{xen:phrase move_posts}...</option></xen:if>
+					<xen:if is="{$inlineModOptions.merge}"><option value="merge">{xen:phrase merge_posts}...</option></xen:if>
+					<option value="deselect">{xen:phrase deselect_posts}</option>
+				</xen:set>
+				<xen:set var="$checkboxTitle">{xen:phrase select_deselect_all_posts_on_this_page}</xen:set>
+				<xen:set var="$selectedItemsPhrase">{xen:phrase selected_posts}</xen:set>
+			</xen:include>
+		</div>
+	</xen:if>
+
+	<input type="hidden" name="_xfToken" value="{$visitor.csrf_token_page}" />
+
+</form>
+
+<xen:if hascontent="true">
+	<div class="pageNavLinkGroup">
+		<xen:contentcheck>
+			<xen:if is="{$canQuickReply}">
+				<xen:if is="{$postsRemaining}">
+					<div class="linkGroup">
+						<xen:if is="{$postsRemaining} == 1">
+							<a href="{xen:link threads, $thread, 'page={xen:calc "{$page} + 1"}'}" class="postsRemaining">{xen:phrase 1_more_message}...</a>
+						<xen:else />
+							<a href="{xen:link threads, $thread, 'page={xen:calc "{$page} + 1"}'}" class="postsRemaining">{xen:phrase x_more_messages, 'count={xen:number $postsRemaining}'}...</a>
+						</xen:if>
+					</div>
+				</xen:if>
+			<xen:else />
+				<div class="linkGroup">
+					<xen:if is="{$canReply}">
+						<a href="{xen:link 'threads/reply', $thread}" class="callToAction"><span>{xen:phrase reply_to_thread}</span></a>
+					<xen:elseif is="{$visitor.user_id}" />
+						({xen:phrase no_permission_to_reply})
+					<xen:else />
+						<label for="LoginControl"><a href="{xen:link login}" class="concealed">({xen:phrase log_in_or_sign_up_to_reply})</a></label>
+					</xen:if>
+				</div>
+			</xen:if>
+
+			<xen:pagenav link="threads" linkdata="{$thread}"
+				page="{$page}" perpage="{$postsPerPage}" total="{$totalPosts}"
+				unreadlink="{$unreadLink}"
+			/>
+		</xen:contentcheck>
+	</div>
+</xen:if>
+
+<xen:include template="ad_thread_view_below_messages" />
+
+<xen:hook name="thread_view_qr_before" params="{xen:array 'thread={$thread}'}" />
+
+<xen:if is="{$canQuickReply}">
+	<xen:include template="quick_reply">
+		<xen:set var="$formAction">{xen:link 'threads/add-reply', $thread}</xen:set>
+		<xen:set var="$lastDate">{$lastPost.post_date}</xen:set>
+		<xen:set var="$showMoreOptions">1</xen:set>
+	</xen:include>
+</xen:if>
+
+<xen:hook name="thread_view_qr_after" params="{xen:array 'thread={$thread}'}" />
+
+{xen:raw $threadStatusHtml}
+
+<xen:include template="share_page">
+	<xen:set var="$url">{xen:link 'full:reviews'}{$thread.url}</xen:set>
+</xen:include>
+
+<xen:include template="sfKomuKuJVC_Footer" />]]></template>
+    <template title="sfKomuKuJVC_Footer" version_id="12" version_string="1.0.12"><![CDATA[<div style="text-align: left; font-size: 11px; margin: 10px;" class="muted">
+&copy; KomuKuJVC from <a href="http://www.surreyforum.co.uk/">Surrey Forum</a>
+</div>]]></template>
+  </templates>
+  <public_template_modifications/>
+  <bb_code_media_sites/>
+</addon>

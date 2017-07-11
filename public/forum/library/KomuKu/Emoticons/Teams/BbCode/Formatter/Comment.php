@@ -1,0 +1,6 @@
+<?php
+
+class KomuKu_Emoticons_Teams_BbCode_Formatter_Comment extends XFCP_KomuKu_Emoticons_Teams_BbCode_Formatter_Comment
+{
+	use KomuKu_Emoticons_Traits_BbCodeBase;
+}

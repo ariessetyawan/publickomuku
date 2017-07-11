@@ -1,0 +1,42 @@
+.team-list {
+	list-style: none;
+	width: 100%;
+	min-height: 600px;
+	position: relative;
+	padding: 0 !important;
+	margin: 0 !important;
+	list-style: none;
+    /*transform: rotate(-5deg) ;
+    -webkit-transform: rotate(-5deg) ;
+    -moz-transform: rotate(-5deg) ;
+    -o-transform: rotate(-5deg) ;
+    -ms-transform: rotate(-5deg) ;*/
+
+
+}
+.team-list li {
+	float: left;
+	position: relative;
+}
+.team-list li,
+.team-list li img {
+	display: block;
+	position: relative;
+}
+.team-list li {
+	overflow: hidden;
+}
+.team-list li div {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+.team-list li div span {
+	display: block;
+	padding: 20px;
+font-family:"Open_Sans_L";
+font-size: 36px;
+	margin: 30px 20px 10px 20px;
+	font-weight: normal;
+	color: #fff;
+}

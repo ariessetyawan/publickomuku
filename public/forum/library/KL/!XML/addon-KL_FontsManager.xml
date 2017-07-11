@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="KL_FontsManager" title="[KL] Fonts Manager" version_string="2.0.8" version_id="19" url="" install_callback_class="KL_Install" install_callback_method="install" uninstall_callback_class="KL_Install" uninstall_callback_method="uninstall">
+  <admin_navigation>
+    <navigation navigation_id="kl_fm" parent_navigation_id="applications" display_order="16" link="" admin_permission_id="bbCodeSmilie" debug_only="0" hide_no_children="0"/>
+    <navigation navigation_id="kl_fm_order" parent_navigation_id="kl_fm" display_order="1" link="kl-fm/list" admin_permission_id="bbCodeSmilie" debug_only="0" hide_no_children="0"/>
+    <navigation navigation_id="kl_fm_webfonts" parent_navigation_id="kl_fm" display_order="100" link="kl-fm/webfonts" admin_permission_id="bbCodeSmilie" debug_only="0" hide_no_children="0"/>
+  </admin_navigation>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates>
+    <template title="kl_fm_js_setup"><![CDATA[<script>
+	var webfonts_api_key = 'AIzaSyDjx5qaHH4OyX_UWLY29SrMECWduxT5TEo';
+
+	var kl_phrases = {
+		security_check : '{xen:phrase kl_fm_securitycheck}',
+		type_google : '{xen:phrase kl_fm_type_google}',
+		type_custom : '{xen:phrase kl_fm_type_custom}',
+		type_local : '{xen:phrase kl_fm_type_local}',
+		title : '{xen:phrase kl_fm_title}',
+		toggle_activity : '{xen:phrase kl_fm_toggle_activity}',
+		drag_and_sort : '{xen:phrase kl_fm_drag_and_sort}',
+		toggle_visibility : '{xen:phrase kl_fm_toggle_visibility}',
+		select_webfont : '{xen:phrase kl_fm_select_google_font}',
+		select : '{xen:phrase kl_fm_select}',
+		no_selection : '{xen:phrase kl_fm_no_selection}',
+		font_stack : '{xen:phrase kl_fm_font_stack}',
+		file_upload : '{xen:phrase kl_fm_upload_file}',
+		file_replace : '{xen:phrase kl_fm_replace_file}',
+		cancel : '{xen:phrase cancel}',
+		activate : '{xen:phrase kl_fm_activate}',
+		security_check_description : '{xen:phrase kl_fm_securitycheck_description}'
+	}
+</script>
+
+<xen:require css="kl_fm_lists.css"/>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
+
+<xen:require js="js/KL/FontsManager/jquery-ui-1.10.4.custom.min.js" />
+<xen:require js="js/KL/FontsManager/manageFontlist.js" />
+]]></template>
+    <template title="kl_fm_list"><![CDATA[<xen:title>{xen:phrase admin_navigation_kl_fm_order}</xen:title>
+<xen:description>
+{xen:phrase kl_fm_list_description}
+<a href="#" class="DescriptionUnhider">{xen:phrase kl_fm_additional_help}</a>
+<span class="HiddenDescription">{xen:phrase kl_fm_type_description}</span>
+</xen:description>
+
+{xen:helper additionalfonts}
+
+<xen:topctrl>
+	<button class="button primary EditMode"><i class="fa fa-pencil" aria-hidden="true"></i> {xen:phrase kl_fm_editdelete_mode}</button>
+</xen:topctrl>
+
+{$message}
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink kl-fm/list}">{xen:phrase kl_fm}</xen:breadcrumb>
+	<xen:breadcrumb href="{xen:adminlink kl-fm/list}">{xen:phrase admin_navigation_kl_fm_order}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:include template="kl_fm_js_setup" />
+
+<xen:form id="fontsForm" upload="true" class="AutoValidator SortableTable" data-redirect="true" action="{xen:adminlink 'kl-fm/update'}"  enctype="multipart/form-data">
+	<input type="hidden" id="MAX_FILE_SIZE" name="MAX_FILE_SIZE" value="300000" />
+	<div class="dataTableWrapper">
+		<table class="dataTable FontTable">
+			<thead>
+				<tr class="dataRow">
+					<th>{xen:phrase kl_fm_settings}</th>
+					<th>{xen:phrase title}</th>
+					<th>{xen:phrase kl_fm_font_stack}</th>
+					<th>{xen:phrase kl_fm_type}</th>
+					<xen:comment><th>{xen:phrase kl_fm_active}</th></xen:comment>
+				</tr>
+			</thead>
+			<tbody id="Sortable">
+				<xen:foreach loop="$fonts" value="$font">
+					<tr id="row{$font.id}" class="dataRow {xen:if '{$font.position} == 0', 'inactive'} {xen:if '!{$font.active}', 'strikeThrough'}">
+						<td>
+							<input type="hidden" name="update[{$font.id}][id]" value="{$font.id}" />
+							<i title="{xen:phrase kl_fm_delete}" class="Tooltip fa fa-trash-o DeleteHandle {xen:if '{$font.type} === "default"', 'disabled'}" aria-hidden="true"></i>
+							<i title="{xen:phrase kl_fm_toggle_active}" class="Tooltip fa fa-toggle-{xen:if {$font.active}, 'on', 'off'} ToggleHandle" aria-hidden="true"></i>
+							<i title="{xen:phrase kl_fm_toggle_visibility}" class="Tooltip fa fa-eye{xen:if '{$font.position} == 0', '-slash'} HideHandle" aria-hidden="true"></i>
+							<i title="{xen:phrase kl_fm_drag_and_sort}" class="Tooltip fa fa-bars SortHandle" aria-hidden="true"></i>
+							<input type="hidden" class="Delete" name="delete[]" data-val="{$font.id}" value="0" />
+							<input type="hidden" class="Position" name="update[{$font.id}][position]" value="{$font.position}" />
+							<input type="hidden" class="Active" name="update[{$font.id}][active]" value="{$font.active}" />
+						</td>
+						<td>
+							<h4><em><input type="text" name="update[{$font.id}][title]" value="{$font.title}" class="fontTitle {xen:if '{$font.type} != "default"', 'change '}textCtrl {xen:if '!{$font.active}', 'strikeThrough'}" /></em></h4>
+						</td>
+						<td>
+							<span style="width: 200px; font-family: {$font.family},'{$font.title}'">{$font.family}{xen:if {$font.additional_data}, ':{$font.additional_data}'}</span>
+							<input type="hidden" name="update[{$font.id}][family]" value="{$font.family}" />
+						</td>
+						<td>
+							<span style="width: 100px">{$font.type_string}</span>
+							<input type="hidden" name="update[{$font.id}][type]" value="{$font.type}" />
+						</td>
+					</tr>
+				</xen:foreach>
+				<xen:comment>
+				<tr class="dataRow newRow">
+					<td style="font-weight: bold; color: green">{xen:phrase New}:<p class="explain">&nbsp;</p></td>
+					<td class="Position">
+						<span class="SortHandle">
+							<i class="fa fa-bars" aria-hidden="true"></i>
+						</span>
+						<input type="hidden" class="textCtrl" name="new[position]" />
+						<p class="explain">&nbsp;</p>
+					</td>
+					<td>
+						<input type="text" name="new[title]" id="newTitle" class="textCtrl" />
+						<p class="explain">{xen:phrase kl_fm_font_title_explain}</p>
+					</td>
+					<td id="tabber">
+						<div id="custom">
+							<xen:textboxunit label="{xen:phrase kl_fm_font_family}:" placeholder="{xen:phrase kl_fm_font_family}" name="new[family]"></xen:textboxunit>
+						<p class="explain">{xen:phrase kl_fm_font_family_explain}</p>
+						</div>
+						<div id="google" style="display:none">
+							<xen:textboxunit label="{xen:phrase kl_fm_google_font}:" placeholder="{xen:phrase kl_fm_google_font}" name="new[webfont]">
+								<input type="button" class="button font" value="A" />
+							</xen:textboxunit>
+							<input type="hidden" name="new[additional_data]" />
+							<p class="explain">{xen:phrase kl_fm_google_font_explain}</p>
+						</div>
+						<div id="local" style="display:none">
+							<input type="hidden" name="MAX_FILE_SIZE" value="10485760" />
+							<xen:uploadunit label="{xen:phrase kl_fm_local_font}:" name="upload_file"></xen:uploadunit>
+						<p class="explain">{xen:phrase kl_fm_local_font_explain}</p>
+						</div>
+					</td>
+				</tr>
+				</xen:comment>
+			</tbody>
+			<tfoot>
+				<tr>
+					<td colspan="6" class="sectionFooter">
+						<input type="submit" value="{xen:phrase save_changes}" class="button primary" />
+						<span>
+							{xen:phrase kl_fm_add_font}:
+							<button class="button TypeSetting Tooltip" title="{xen:phrase kl_fm_type_custom}" data-type="custom" value="C">
+								<i class="fa fa-font" aria-hidden="true"></i>
+							</button>
+							<button class="button TypeSetting Tooltip" title="{xen:phrase kl_fm_type_google}" data-type="google">
+								<i class="fa fa-google" aria-hidden="true"></i>
+							</button>
+							<button class="button TypeSetting Tooltip" title="{xen:phrase kl_fm_type_local}" data-type="local" value="L">
+								<i class="fa fa-upload" aria-hidden="true"></i>
+							</button>
+						</span>
+					</td>
+				</tr>
+			</tfoot>
+		</table>
+	</div>
+</xen:form>]]></template>
+    <template title="kl_fm_lists.css"><![CDATA[.sectionFooter span {float:right}
+.noCtrl {background: none;border: none}
+.EditModeTrigger{margin-right:4px}
+#pageDescription b {color: {xen:property dimmedTextColor}}
+.HiddenDescription {display: none}
+.HiddenDescription.visible {display:block}
+#pageDescription a {color:{xen:property primaryMedium} !important}
+
+/* File Uploader */
+.fileUpload {position: relative;overflow: hidden}
+.fileUpload input[type='file'] {position: absolute;top: 0;right: 0;font-size: 20px;cursor: pointer;opacity: 0;filter: alpha(opacity=0)}
+.fileName {font-size: 11px;position:relative;top:-7px;margin-left:5px}
+
+/* Webfont Selector Overlay */
+#fontChoserWrapper, #fontOptions {vertical-align:top;display: inline-block;margin:0}
+#fontChoserWrapper{width: 20%;min-height:300px;background:{xen:property contentBackground}}
+#fontChoserWrapper > div > label {display:block;padding:2px}
+#fontChoser {width:100%;min-height:200px}
+#fontOptions{width: 70%;padding: 0 5%;min-height:300px;background:{xen:property contentBackground}}
+#fontOptionSelector label{display: inline-block; width: 33%}
+#fontOptionSelector {min-height:100px}
+#fontOptionExample {width: 100%;min-height: 115px;resize: none}
+#fontOptions h2 {border-bottom: 2px solid {xen:property primaryLighter}}
+.xenOverlay .section {background:{xen:property contentBackground}}
+.xenOverlay .baseHtml {padding: 10px}
+
+/* Data Rows */
+.dataRow.strikeThrough span,.dataRow.strikeThrough input {text-decoration: line-through}
+.dataRow.inactive span,.dataRow.inactive input{color: {xen:property mutedTextColor} !important}
+.dataRow.delete {background: rgba(255,0,0,.05)}
+
+/* Handles */
+.ToggleHandle {cursor: pointer}
+.ToggleHandle.fa-toggle-on {color: green}
+.ToggleHandle.fa-toggle-off {color: red}
+.DeleteHandle {cursor: pointer;display: none !important}
+.DeleteHandle.visible{display:inline-block !important}
+.DeleteHandle.active {color: red}
+.DeleteHandle.disabled {color: {xen:property faintTextColor};text-decoration: line-through;cursor:default}
+.SortHandle {cursor: ns-resize}
+.HideHandle {cursor: pointer}
+.HideHandle.fa-eye-slash{color: {xen:property mutedTextColor}}
+
+.DeleteHandle::before {content: "D"}
+.fa-toggle-on::before, .fa-toggle-off::before {Content: "A"}
+.fa-eye::before, .fa-eye-slash::before {content: "H"}
+.fa-bars::before {content: "::"}
+.fa-font::before {content: "A"}
+.fa-google::before {content: "G"}
+.fa-upload::before {content: "U"}
+.fa-exchange::before {content: "&#8644;"}
+.SelectFont + span {padding-left: 5px}
+
+/* Google Fonts List */
+.NewWebfont{text-transform: capitalize}]]></template>
+    <template title="kl_fm_upload_response"><![CDATA[<span id="data">{xen:raw $data}</span>]]></template>
+    <template title="kl_fm_webfonts"><![CDATA[<xen:title>{xen:phrase admin_navigation_kl_fm_webfonts}</xen:title>
+<xen:description>{xen:phrase kl_fm_manage_google_fonts_description}</xen:description>
+
+
+<xen:navigation>
+	<xen:breadcrumb href="{xen:adminlink kl-fm/list}">{xen:phrase kl_fm}</xen:breadcrumb>
+	<xen:breadcrumb href="{xen:adminlink kl-fm/webfonts}">{xen:phrase admin_navigation_kl_fm_webfonts}</xen:breadcrumb>
+</xen:navigation>
+
+<xen:include template="kl_fm_js_setup" />
+
+<xen:form class="AutoValidator" data-redirect="true" action="{xen:adminlink 'kl-fm/webfonts-update'}">
+	<xen:radiounit label="{xen:phrase kl_fm_mode}:" name="mode" explain="{xen:phrase kl_fm_mode_description}">
+		<xen:option value="1" label="{xen:phrase kl_fm_whitelist}" selected="{$xenOptions.kl_fm_mode}"></xen:option>
+		<xen:option value="0" label="{xen:phrase kl_fm_blacklist}" selected="!{$xenOptions.kl_fm_mode}"></xen:option>
+	</xen:radiounit>
+
+	<div class="dataTableWrapper">
+		<table class="dataTable">
+			<col style="width: 1%" />
+			<thead>
+				<tr class="dataRow">
+					<th>{xen:phrase kl_fm_settings}</th>
+					<th>{xen:phrase title}</th>
+				</tr>
+			</thead>
+			<tbody>
+				<xen:foreach loop="$fonts" value="$font">
+					<link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$font.title}" />
+					<tr class="dataRow{xen:if '!{$font.active}', ' strikeThrough'}">
+						<td>
+							<input type="hidden" name="update[{$font.id}][id]" value="{$font.id}" />
+							
+							<i title="{xen:phrase kl_fm_delete}" class="Tooltip fa fa-trash-o DeleteHandle visible {xen:if '{$font.type} === "default"', 'disabled'}" aria-hidden="true"></i>
+							<i title="{xen:phrase kl_fm_toggle_active}" class="Tooltip fa fa-toggle-{xen:if {$font.active}, 'on', 'off'} ToggleHandle" aria-hidden="true"></i>
+							
+							<input type="hidden" class="Delete" name="delete[]" data-val="{$font.id}" value="0" />
+							<input type="hidden" class="Active" name="update[{$font.id}][active]" value="{$font.active}" />
+						
+						</td>
+						<td>
+							<span class="Tooltip" title="{$font.title}" style="width: 300px; font-family: '{$font.title}'">{$font.title}</span>
+							<input type="hidden" name="update[{$font.id}][title]" value="{$font.title}" />
+						</td>
+					</tr>
+				</xen:foreach>
+			</tbody>
+			<tfoot>
+				<tr>
+					<td colspan="3" class="sectionFooter">
+						<input type="submit" value="{xen:phrase save_changes}" class="button primary" />
+						<span><button class="NewWebfont button">{xen:phrase kl_fm_add_font}</button></span>
+					</td>
+				</tr>
+			</tfoot>
+		</table>
+</div>
+</xen:form>]]></template>
+  </admin_templates>
+  <admin_template_modifications/>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="init_dependencies" execute_order="10" callback_class="KL_FontsManager_Listener_Helper" callback_method="extend" active="1" hint="" description=""/>
+    <listener event_id="load_class_bb_code" execute_order="10" callback_class="KL_FontsManager_Listener_BBCode" callback_method="extend" active="1" hint="XenForo_BbCode_Formatter_Base" description=""/>
+    <listener event_id="tinyquattro_setup" execute_order="10" callback_class="KL_FontsManager_Listener_TinyMCE" callback_method="mceConfiguration" active="1" hint="" description=""/>
+  </code_event_listeners>
+  <cron>
+    <entry entry_id="KL_FontsManager_FD" cron_class="KL_FontsManager_CronEntries_CleanFontDirectory" cron_method="cleanup" active="1"><![CDATA[{"day_type":"dow","dow":["5"],"hours":["3"],"minutes":["6"]}]]></entry>
+  </cron>
+  <email_templates/>
+  <email_template_modifications/>
+  <optiongroups/>
+  <permissions>
+    <permission_groups/>
+    <permissions>
+      <permission permission_group_id="general" permission_id="kl_fm_webfonts" permission_type="flag" default_value="unset" interface_group_id="generalPermissions" display_order="1000"/>
+    </permissions>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="admin_navigation_kl_fm" version_id="1" version_string="0.0.1"><![CDATA[Editor Fonts]]></phrase>
+    <phrase title="admin_navigation_kl_fm_order" version_id="3" version_string="0.9.2"><![CDATA[Editor Font List]]></phrase>
+    <phrase title="admin_navigation_kl_fm_webfonts" version_id="10" version_string="2.0.0"><![CDATA[Google Fonts List]]></phrase>
+    <phrase title="cron_entry_KL_FontsManager_FD" version_id="10" version_string="2.0.0"><![CDATA[[KL] Fonts Manager - Clean Data Directory]]></phrase>
+    <phrase title="kl_fm" version_id="10" version_string="2.0.0"><![CDATA[[KL] Font Manager]]></phrase>
+    <phrase title="kl_fm_activate" version_id="10" version_string="2.0.0"><![CDATA[Activate]]></phrase>
+    <phrase title="kl_fm_active" version_id="10" version_string="2.0.0"><![CDATA[Active]]></phrase>
+    <phrase title="kl_fm_additional_help" version_id="10" version_string="2.0.0"><![CDATA[More Help]]></phrase>
+    <phrase title="kl_fm_add_font" version_id="10" version_string="2.0.0"><![CDATA[Add new font]]></phrase>
+    <phrase title="kl_fm_blacklist" version_id="10" version_string="2.0.0"><![CDATA[Blacklist Mode]]></phrase>
+    <phrase title="kl_fm_delete" version_id="10" version_string="2.0.0"><![CDATA[Delete Font]]></phrase>
+    <phrase title="kl_fm_drag_and_sort" version_id="10" version_string="2.0.0"><![CDATA[Drag & Sort Font]]></phrase>
+    <phrase title="kl_fm_editdelete_mode" version_id="10" version_string="2.0.0"><![CDATA[Edit/Delete Mode]]></phrase>
+    <phrase title="kl_fm_font_stack" version_id="10" version_string="2.0.0"><![CDATA[Font Stack]]></phrase>
+    <phrase title="kl_fm_list_description" version_id="10" version_string="2.0.0"><![CDATA[This page is responsible for managing all fonts available on your page, more explicitely on your editor font-family dropdown. You may easily (de-)activate (<i class="fa fa-toggle-on" aria-hidden="true"></i>), hide/show (<i class="fa fa-eye" aria-hidden="true"></i>), move (<i class="fa fa-bars" aria-hidden="true"></i>) them via drag&drop or delete (<i class="fa fa-trash" aria-hidden="true"></i>) them completely (requires Edit/Delete-Mode activation).]]></phrase>
+    <phrase title="kl_fm_manage_google_fonts_description" version_id="10" version_string="2.0.0"><![CDATA[This page is responsible for managing the additional Google Fonts your users are able to use. Those fonts will only be loaded when explicitely requested by a BBCode, thus not increase your <b>page load time</b> when not in use.
+You may easily (de-)activate (<i class="Tooltip fa fa-toggle-on" aria-hidden="true"></i>)  or delete (<i class="Tooltip fa fa-trash" aria-hidden="true"></i>) them completely.]]></phrase>
+    <phrase title="kl_fm_mode" version_id="10" version_string="2.0.0"><![CDATA[Mode]]></phrase>
+    <phrase title="kl_fm_mode_description" version_id="10" version_string="2.0.0"><![CDATA[With <b>Blacklist Mode</b> enabled, listed Google Fonts won't be available for use by users. <b>Whitelist Mode</b> on the other hand will only allow fonts that are listed here. Google Fonts selected in the Editor Font List won't be affected by this list.]]></phrase>
+    <phrase title="kl_fm_no_selection" version_id="10" version_string="2.0.0"><![CDATA[No Selection]]></phrase>
+    <phrase title="kl_fm_replace_file" version_id="10" version_string="2.0.0"><![CDATA[Replace File]]></phrase>
+    <phrase title="kl_fm_securitycheck" version_id="10" version_string="2.0.0"><![CDATA[Warning]]></phrase>
+    <phrase title="kl_fm_securitycheck_description" version_id="10" version_string="2.0.0"><![CDATA[Changing font titles or deleting fonts will break their appearance around your website. If you want to keep functionality for those old fonts, consider hiding them instead and create a new instance.]]></phrase>
+    <phrase title="kl_fm_select" version_id="10" version_string="2.0.0"><![CDATA[Select]]></phrase>
+    <phrase title="kl_fm_select_google_font" version_id="10" version_string="2.0.0"><![CDATA[Select Google Font]]></phrase>
+    <phrase title="kl_fm_settings" version_id="10" version_string="2.0.0"><![CDATA[Options]]></phrase>
+    <phrase title="kl_fm_title" version_id="10" version_string="2.0.0"><![CDATA[Font Title]]></phrase>
+    <phrase title="kl_fm_toggle_active" version_id="10" version_string="2.0.0"><![CDATA[De-/Activate Font]]></phrase>
+    <phrase title="kl_fm_toggle_visibility" version_id="10" version_string="2.0.0"><![CDATA[Show/Hide Font]]></phrase>
+    <phrase title="kl_fm_type" version_id="10" version_string="2.0.0"><![CDATA[Type]]></phrase>
+    <phrase title="kl_fm_type_custom" version_id="10" version_string="2.0.0"><![CDATA[Custom Font]]></phrase>
+    <phrase title="kl_fm_type_default" version_id="10" version_string="2.0.0"><![CDATA[Default Font]]></phrase>
+    <phrase title="kl_fm_type_description" version_id="10" version_string="2.0.0"><![CDATA[Fonts can be divided in four different types: <b>Default Fonts</b> are the fonts that come natively with XenForo. They can't be deleted, so you can easily activate them again at need. <b>Custom Fonts</b> are Web Safe Fonts that are normally already available on an end users system, thus not increasing the <b>page load time</b>. You can easily copy the most common font stacks from <a href="http://www.cssfontstack.com/" target="_blank">cssfontstack.com</a>. <b>Google Fonts</b> are fonts provided by Google, thus being served from their server. Google offers a large variety of fonts. However, each font that you include, will increase your end users <b>page load time</b>. <b>Local Fonts</b> are fonts, that you upload to your webserver, thus being served <i>locally</i> from your server. They increase both, your end users <b>page load time</b> and your <b>Server Load</b>. For compatibility reasons with all modern browsers, they need to be in .woff format. You can find various converters around the web.]]></phrase>
+    <phrase title="kl_fm_type_google" version_id="10" version_string="2.0.0"><![CDATA[Google Font]]></phrase>
+    <phrase title="kl_fm_type_local" version_id="10" version_string="2.0.0"><![CDATA[Local Font]]></phrase>
+    <phrase title="kl_fm_upload_file" version_id="10" version_string="2.0.0"><![CDATA[Upload File]]></phrase>
+    <phrase title="kl_fm_whitelist" version_id="10" version_string="2.0.0"><![CDATA[Whitelist Mode]]></phrase>
+    <phrase title="option_kl_fm_mode" version_id="3" version_string="0.9.2"><![CDATA[Webfonts Mode]]></phrase>
+    <phrase title="option_kl_fm_mode_explain" version_id="3" version_string="0.9.2"><![CDATA[]]></phrase>
+    <phrase title="permission_general_kl_fm_webfonts" version_id="2" version_string="0.9.1"><![CDATA[Use Google Webfonts]]></phrase>
+  </phrases>
+  <route_prefixes>
+    <route_type type="admin">
+      <prefix original_prefix="kl-fm" class="KL_FontsManager_Route_PrefixAdmin_Fonts" build_link="none"/>
+    </route_type>
+  </route_prefixes>
+  <style_properties/>
+  <templates/>
+  <public_template_modifications>
+    <modification template="PAGE_CONTAINER" modification_key="kl_fm_PAGE_CONTAINER" description="Load Fonts" execution_order="10" enabled="1" action="str_replace">
+      <find><![CDATA[</head>]]></find>
+      <replace><![CDATA[{xen:helper additionalfonts}
+$0]]></replace>
+    </modification>
+    <modification template="page_container_js_head" modification_key="kl_fm_editor_button" description="Rework Fonts List in Redactor" execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[#<!--XenForo_Require:JS-->#i]]></find>
+      <replace><![CDATA[$0
+<xen:require js="js/KL/FontsManager/extend.js" />
+<xen:require js="js/KL/FontsManager/load.js" />]]></replace>
+    </modification>
+    <modification template="editor_js_setup" modification_key="kl_fm_editor_js_setup" description="Add fonts for js" execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[/^/]]></find>
+      <replace><![CDATA[<script type="text/javascript">
+var fonts = {xen:helper fonts}
+</script>
+<script type="text/javascript">
+var fontlinks = {xen:helper additionalfonts, true}
+</script>]]></replace>
+    </modification>
+    <modification template="tiny_quattro_js_setup" modification_key="kl_fm_tiny_quattro_js_setup" description="Extend TinyMCE" execution_order="10" enabled="1" action="preg_replace">
+      <find><![CDATA[/$/]]></find>
+      <replace><![CDATA[$0
+<script>
+var fontlinks = {xen:helper additionalfonts, true, true}
+</script>
+<xen:require js="js/KL/FontsManager/extendMCE.js" />]]></replace>
+    </modification>
+  </public_template_modifications>
+  <bb_code_media_sites/>
+  <bb_codes/>
+</addon>
