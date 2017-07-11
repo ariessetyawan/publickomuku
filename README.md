@@ -1,2 +1,2 @@
 # publickomuku
-masterkomukupublic
+Komuku (E2C Forum) adalah adalah share, komunitas dan jual beli. Komuku adalah tempat tinggal bagi siapa saja untuk menemukan segala hal yang meraka butuhkan, seperti informasi, pengetahuan, bergabung dengan komunitas, membuat dan melihat acara, hingga jual beli. Komuku terbagi dua jenis yaitu, Forum dan Yuk Jual Beli (YJB). Forum adalah wadah untuk berbagi dan berdiskusi tentang segala hal. Yuk Jual Beli (YJB) adalah wadah untuk bertransaksi jual beli produk apapun.
